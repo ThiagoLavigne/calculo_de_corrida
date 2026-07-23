@@ -1,710 +1,934 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#111827" />
-  <title>Calculadora do Motorista</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>Controle do Motorista</title>
 
-  <style>
-    :root {
-      --bg: #f3f4f6;
-      --card: #ffffff;
-      --primary: #111827;
-      --accent: #16a34a;
-      --accent-soft: #dcfce7;
-      --danger: #dc2626;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --border: #d1d5db;
-    }
+<style>
+:root{
+  --bg:#f3f4f6;
+  --card:#ffffff;
+  --primary:#111827;
+  --green:#16a34a;
+  --green-soft:#dcfce7;
+  --danger:#dc2626;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --border:#d1d5db;
+}
 
-    * { box-sizing: border-box; }
+*{box-sizing:border-box}
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      padding: 16px;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
+body{
+  margin:0;
+  min-height:100vh;
+  padding:18px 16px 92px;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
 
-    .container {
-      width: 100%;
-      max-width: 560px;
-      margin: 0 auto;
-    }
+.container{
+  width:100%;
+  max-width:560px;
+  margin:auto;
+}
 
-    h1 {
-      margin: 4px 0 6px;
-      text-align: center;
-      font-size: 27px;
-    }
+h1{
+  margin:0 0 6px;
+  text-align:center;
+  font-size:27px;
+}
 
-    .subtitle {
-      margin: 0 0 18px;
-      text-align: center;
-      color: var(--muted);
-    }
+.subtitle{
+  margin:0 0 18px;
+  text-align:center;
+  color:var(--muted);
+}
 
-    .tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 16px;
-      padding: 5px;
-      border-radius: 14px;
-      background: #e5e7eb;
-    }
+.screen{display:none}
+.screen.active{display:block}
 
-    .tab-button {
-      min-height: 44px;
-      border: 0;
-      border-radius: 10px;
-      background: transparent;
-      color: var(--muted);
-      font-weight: bold;
-      font-size: 16px;
-      cursor: pointer;
-    }
+.card{
+  width:100%;
+  margin-bottom:16px;
+  padding:18px;
+  overflow:hidden;
+  border-radius:16px;
+  background:var(--card);
+  box-shadow:0 4px 14px rgba(0,0,0,.08);
+}
 
-    .tab-button.active {
-      background: var(--card);
-      color: var(--text);
-      box-shadow: 0 3px 10px rgba(0,0,0,.08);
-    }
+.card h2{
+  margin:0 0 16px;
+  font-size:20px;
+}
 
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+label{
+  display:block;
+  margin:12px 0 6px;
+  font-weight:bold;
+}
 
-    .card {
-      margin-bottom: 16px;
-      padding: 18px;
-      border-radius: 16px;
-      background: var(--card);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
-    }
+input,select,button{font:inherit}
 
-    .card h2 {
-      margin: 0 0 16px;
-      font-size: 19px;
-    }
+input,select{
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  height:48px;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#fff;
+}
 
-    .field { margin-bottom: 14px; }
+input[type="date"]{
+  appearance:none;
+  -webkit-appearance:none;
+}
 
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: bold;
-    }
+button{
+  width:100%;
+  min-height:48px;
+  padding:12px;
+  border:0;
+  border-radius:10px;
+  background:var(--primary);
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
 
-    input, select, button {
-      width: 100%;
-      min-height: 48px;
-      border-radius: 10px;
-      font-size: 17px;
-    }
+.secondary{
+  margin-top:10px;
+  background:var(--green);
+}
 
-    input, select {
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      background: #fff;
-    }
+.light{
+  margin-top:10px;
+  background:#e5e7eb;
+  color:var(--text);
+}
 
-    input:focus, select:focus {
-      outline: 2px solid rgba(22, 163, 74, 0.25);
-      border-color: var(--accent);
-    }
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  padding:12px 0;
+  border-bottom:1px solid #eee;
+}
 
-    button {
-      border: none;
-      padding: 12px;
-      cursor: pointer;
-      font-weight: bold;
-    }
+.row:last-child{border-bottom:0}
 
-    .primary { background: var(--primary); color: white; }
-    .save { background: var(--accent); color: white; }
-    .secondary { margin-top: 10px; background: #e5e7eb; color: var(--text); }
-    .danger { background: #fee2e2; color: var(--danger); }
+.row span{color:var(--muted)}
+.row strong{text-align:right}
 
-    .fuel-summary {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 14px;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      background: #f9fafb;
-    }
+.results{display:none}
 
-    .fuel-summary-title {
-      margin-bottom: 5px;
-      font-weight: bold;
-      font-size: 17px;
-    }
+.profit-box{
+  margin-top:12px;
+  padding:4px 14px;
+  border-radius:12px;
+  background:var(--green-soft);
+  color:#166534;
+}
 
-    .fuel-summary-details {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.5;
-    }
+.profit-box.negative{
+  background:#fee2e2;
+  color:var(--danger);
+}
 
-    .edit-button {
-      width: 44px;
-      min-width: 44px;
-      height: 44px;
-      min-height: 44px;
-      padding: 0;
-      border-radius: 50%;
-      background: #e5e7eb;
-      font-size: 20px;
-    }
+.message{
+  display:none;
+  margin-top:12px;
+  padding:12px;
+  border-radius:10px;
+  background:var(--green-soft);
+  color:#166534;
+  text-align:center;
+  font-weight:bold;
+}
 
-    .results { display: none; }
+.date-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:10px;
+}
 
-    .result-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 12px 0;
-      border-bottom: 1px solid #e5e7eb;
-    }
+.date-grid > div{min-width:0}
 
-    .result-row:last-child { border-bottom: none; }
-    .result-label { color: var(--muted); }
-    .result-value { text-align: right; font-weight: bold; }
+.empty-state{
+  margin-top:16px;
+  padding:16px;
+  border-radius:12px;
+  background:#f9fafb;
+  color:var(--muted);
+  text-align:center;
+}
 
-    .profit {
-      margin-top: 12px;
-      padding: 14px;
-      border-radius: 12px;
-      background: var(--accent-soft);
-      color: #166534;
-    }
+.calendar-panel{
+  display:none;
+  margin-top:16px;
+  padding-top:16px;
+  border-top:1px solid #e5e7eb;
+}
 
-    .profit.negative {
-      background: #fee2e2;
-      color: var(--danger);
-    }
+.calendar-panel.open{display:block}
 
-    .save-day-box {
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid #e5e7eb;
-    }
+.calendar-header{
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr) 44px;
+  align-items:center;
+  gap:8px;
+  margin-bottom:12px;
+}
 
-    .save-day-question {
-      margin: 0 0 10px;
-      text-align: center;
-      font-weight: bold;
-    }
+.calendar-header button{
+  width:44px;
+  min-width:44px;
+  min-height:42px;
+  padding:0;
+  background:#e5e7eb;
+  color:var(--text);
+  font-size:24px;
+}
 
-    .saved-day-message {
-      display: none;
-      margin-top: 10px;
-      text-align: center;
-      color: var(--accent);
-      font-weight: bold;
-    }
+.calendar-title{
+  text-align:center;
+  font-weight:bold;
+  text-transform:capitalize;
+}
 
-    .date-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
+.weekdays,.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:5px;
+}
 
-    .summary-cards {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 16px;
-    }
+.weekdays div{
+  padding:5px 0;
+  text-align:center;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:bold;
+}
 
-    .summary-card {
-      padding: 15px;
-      border-radius: 13px;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-    }
+.calendar-day{
+  width:100%;
+  min-width:0;
+  min-height:42px;
+  padding:4px 1px;
+  border:1px solid #e5e7eb;
+  border-radius:9px;
+  background:#fff;
+  color:var(--text);
+  font-size:13px;
+}
 
-    .summary-card span {
-      display: block;
-      color: var(--muted);
-      font-size: 14px;
-      margin-bottom: 5px;
-    }
+.calendar-day.empty{
+  visibility:hidden;
+}
 
-    .summary-card strong {
-      font-size: 22px;
-    }
+.calendar-day.today{
+  outline:2px solid #f59e0b;
+}
 
-    .history-list {
-      margin-top: 16px;
-      display: grid;
-      gap: 10px;
-    }
+.calendar-day.saved{
+  background:var(--green-soft);
+  border-color:var(--green);
+  color:#166534;
+  font-weight:bold;
+}
 
-    .history-item {
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #e5e7eb;
-      background: #fff;
-    }
+.calendar-day.selected{
+  background:var(--primary);
+  border-color:var(--primary);
+  color:#fff;
+}
 
-    .history-date {
-      margin-bottom: 8px;
-      font-weight: bold;
-    }
+.day-summary{
+  display:none;
+  margin-top:14px;
+  margin-bottom:78px;
+  padding:14px;
+  border-radius:12px;
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+}
 
-    .history-details {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px 10px;
-      color: var(--muted);
-      font-size: 14px;
-    }
+.day-summary h3{
+  margin:0 0 8px;
+  font-size:17px;
+}
 
-    .empty-state {
-      padding: 18px;
-      text-align: center;
-      color: var(--muted);
-      background: #f9fafb;
-      border-radius: 12px;
-    }
+.fuel-summary{
+  display:none;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:14px;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  background:#f9fafb;
+}
 
-    .note {
-      margin-top: 12px;
-      font-size: 13px;
-      line-height: 1.45;
-      color: var(--muted);
-    }
+.fuel-summary strong{
+  display:block;
+  margin-bottom:5px;
+}
 
-    @media (min-width: 480px) {
-      .summary-cards { grid-template-columns: repeat(3, 1fr); }
-    }
-  </style>
+.fuel-summary small{
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.edit-button{
+  width:44px;
+  min-width:44px;
+  height:44px;
+  min-height:44px;
+  padding:0;
+  border-radius:50%;
+  background:#e5e7eb;
+  color:var(--text);
+  font-size:20px;
+}
+
+.bottom{
+  position:fixed;
+  left:50%;
+  bottom:0;
+  z-index:20;
+  width:100%;
+  max-width:560px;
+  transform:translateX(-50%);
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  padding:7px 10px calc(7px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.97);
+  border-top:1px solid #ddd;
+}
+
+.bottom button{
+  min-width:0;
+  min-height:54px;
+  padding:6px 2px;
+  border-radius:10px;
+  background:#fff;
+  color:#666;
+  font-size:12px;
+}
+
+.bottom button.active{
+  background:#f3f4f6;
+  color:#111;
+}
+
+.bottom b{
+  display:block;
+  margin-bottom:3px;
+  font-size:20px;
+}
+
+.note{
+  margin-top:12px;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.45;
+}
+
+@media(max-width:380px){
+  .date-grid{grid-template-columns:1fr}
+}
+</style>
 </head>
 
 <body>
-  <main class="container">
-    <h1>Calculadora do Motorista</h1>
-    <p class="subtitle">Controle simples de faturamento, combustível e lucro.</p>
+<div class="container">
+  <h1>Controle do Motorista</h1>
+  <p class="subtitle">Faturamento, combustível e lucro.</p>
 
-    <nav class="tabs">
-      <button id="tabCalculatorButton" class="tab-button active" onclick="openTab('calculator')">
-        Calculadora
+  <section id="novoScreen" class="screen active">
+    <div class="card">
+      <h2>Novo lançamento</h2>
+
+      <label for="distance">Quilômetros rodados</label>
+      <input id="distance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ex.: 150">
+
+      <label for="earnings">Faturamento</label>
+      <input id="earnings" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ex.: 300,00">
+
+      <button type="button" onclick="calculate()">Calcular</button>
+      <button class="light" type="button" onclick="clearForm()">Limpar</button>
+    </div>
+
+    <div id="results" class="card results">
+      <h2>Resultado</h2>
+
+      <div class="row">
+        <span>Faturamento</span>
+        <strong id="resultEarnings">R$ 0,00</strong>
+      </div>
+
+      <div class="row">
+        <span>Gasto combustível</span>
+        <strong id="resultFuel">R$ 0,00</strong>
+      </div>
+
+      <div class="row">
+        <span>Quilômetros</span>
+        <strong id="resultKm">0 km</strong>
+      </div>
+
+      <div id="profitBox" class="profit-box">
+        <div class="row">
+          <span>Lucro</span>
+          <strong id="resultProfit">R$ 0,00</strong>
+        </div>
+      </div>
+
+      <label for="recordDate">Data</label>
+      <input id="recordDate" type="date">
+
+      <button class="secondary" type="button" onclick="saveDay()">Salvar o dia</button>
+      <div id="saveMessage" class="message">Dia salvo com sucesso!</div>
+
+      <p class="note">O lucro desconta somente o combustível.</p>
+    </div>
+  </section>
+
+  <section id="historicoScreen" class="screen">
+    <div class="card">
+      <h2>Histórico</h2>
+
+      <div class="date-grid">
+        <div>
+          <label for="startDate">Data inicial</label>
+          <input id="startDate" type="date" onchange="updatePeriodSummary()">
+        </div>
+
+        <div>
+          <label for="endDate">Data final</label>
+          <input id="endDate" type="date" onchange="updatePeriodSummary()">
+        </div>
+      </div>
+
+      <button type="button" style="margin-top:14px" onclick="updatePeriodSummary()">
+        Atualizar período
       </button>
-      <button id="tabSummaryButton" class="tab-button" onclick="openTab('summary')">
-        Resumo
+
+      <div id="periodSummary" style="margin-top:18px">
+        <div class="row">
+          <span>Dias trabalhados</span>
+          <strong id="periodDays">0</strong>
+        </div>
+        <div class="row">
+          <span>Faturamento</span>
+          <strong id="periodEarnings">R$ 0,00</strong>
+        </div>
+        <div class="row">
+          <span>Gasto combustível</span>
+          <strong id="periodFuel">R$ 0,00</strong>
+        </div>
+        <div class="row">
+          <span>Lucro</span>
+          <strong id="periodProfit">R$ 0,00</strong>
+        </div>
+        <div class="row">
+          <span>Quilômetros</span>
+          <strong id="periodKm">0 km</strong>
+        </div>
+      </div>
+
+      <button id="calendarToggle" class="secondary" type="button" onclick="toggleCalendar()">
+        📅 Ver calendário
       </button>
-    </nav>
 
-    <section id="calculatorTab" class="tab-content active">
-      <section class="card">
-        <h2>Configuração do combustível</h2>
-
-        <div id="fuelForm">
-          <div class="field">
-            <label for="fuelType">Combustível</label>
-            <select id="fuelType">
-              <option value="Gasolina">Gasolina</option>
-              <option value="Etanol">Álcool / Etanol</option>
-              <option value="GNV">Gás / GNV</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="fuelPrice">Preço por litro ou m³</label>
-            <input id="fuelPrice" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ex.: 6,19" />
-          </div>
-
-          <div class="field">
-            <label for="consumption">Consumo do veículo</label>
-            <input id="consumption" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ex.: 10,5 km por litro" />
-          </div>
-
-          <button class="save" type="button" onclick="saveFuelData()">Salvar combustível</button>
+      <div id="calendarPanel" class="calendar-panel">
+        <div class="calendar-header">
+          <button type="button" onclick="changeMonth(-1)">‹</button>
+          <div id="calendarTitle" class="calendar-title"></div>
+          <button type="button" onclick="changeMonth(1)">›</button>
         </div>
 
-        <div id="fuelSummary" class="fuel-summary">
-          <div>
-            <div id="summaryFuelType" class="fuel-summary-title">Gasolina</div>
-            <div id="summaryFuelDetails" class="fuel-summary-details"></div>
-          </div>
-          <button class="edit-button" type="button" onclick="editFuelData()" aria-label="Editar combustível">✏️</button>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2>Informações do dia</h2>
-
-        <div class="field">
-          <label for="distance">Quilômetros rodados</label>
-          <input id="distance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ex.: 150" />
+        <div class="weekdays">
+          <div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div>
+          <div>QUI</div><div>SEX</div><div>SÁB</div>
         </div>
 
-        <div class="field">
-          <label for="earnings">Faturamento</label>
-          <input id="earnings" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ex.: 300,00" />
-        </div>
+        <div id="calendarGrid" class="calendar-grid"></div>
 
-        <button class="primary" type="button" onclick="calculate()">Calcular</button>
-        <button class="secondary" type="button" onclick="clearDailyFields()">Limpar</button>
-      </section>
+        <div id="daySummary" class="day-summary">
+          <h3 id="daySummaryTitle"></h3>
 
-      <section id="results" class="card results">
-        <h2>Resultado</h2>
-
-        <div class="result-row">
-          <span class="result-label">Combustível usado</span>
-          <span id="resultFuelType" class="result-value">-</span>
-        </div>
-        <div class="result-row">
-          <span class="result-label">Quantidade consumida</span>
-          <span id="resultLiters" class="result-value">-</span>
-        </div>
-        <div class="result-row">
-          <span class="result-label">Gasto com combustível</span>
-          <span id="resultFuelCost" class="result-value">-</span>
-        </div>
-        <div class="result-row">
-          <span class="result-label">Faturamento por km</span>
-          <span id="resultGrossPerKm" class="result-value">-</span>
-        </div>
-
-        <div id="profitBox" class="profit">
-          <div class="result-row">
-            <span>Lucro</span>
-            <span id="resultNet" class="result-value">-</span>
-          </div>
-          <div class="result-row">
-            <span>Lucro por km</span>
-            <span id="resultNetPerKm" class="result-value">-</span>
-          </div>
-        </div>
-
-        <div class="save-day-box">
-          <p class="save-day-question">Deseja salvar este dia?</p>
-          <div class="field">
-            <label for="recordDate">Data</label>
-            <input id="recordDate" type="date" />
-          </div>
-          <button class="save" type="button" onclick="saveDay()">Salvar o dia</button>
-          <div id="savedDayMessage" class="saved-day-message">Dia salvo no calendário.</div>
-        </div>
-
-        <p class="note">
-          O lucro desconta somente o combustível. Outras despesas ainda não estão incluídas.
-        </p>
-      </section>
-    </section>
-
-    <section id="summaryTab" class="tab-content">
-      <section class="card">
-        <h2>Resumo por período</h2>
-
-        <div class="date-grid">
-          <div class="field">
-            <label for="startDate">Data inicial</label>
-            <input id="startDate" type="date" />
-          </div>
-          <div class="field">
-            <label for="endDate">Data final</label>
-            <input id="endDate" type="date" />
-          </div>
-        </div>
-
-        <button class="primary" type="button" onclick="generateSummary()">Calcular resumo</button>
-
-        <div class="summary-cards">
-          <div class="summary-card">
+          <div class="row">
             <span>Faturamento</span>
-            <strong id="summaryEarnings">R$ 0,00</strong>
+            <strong id="dayEarnings">R$ 0,00</strong>
           </div>
-          <div class="summary-card">
-            <span>Combustível</span>
-            <strong id="summaryFuelCost">R$ 0,00</strong>
+          <div class="row">
+            <span>Gasto combustível</span>
+            <strong id="dayFuel">R$ 0,00</strong>
           </div>
-          <div class="summary-card">
+          <div class="row">
             <span>Lucro</span>
-            <strong id="summaryProfit">R$ 0,00</strong>
+            <strong id="dayProfit">R$ 0,00</strong>
+          </div>
+          <div class="row">
+            <span>Quilômetros</span>
+            <strong id="dayKm">0 km</strong>
           </div>
         </div>
+      </div>
 
-        <div id="historyList" class="history-list"></div>
-      </section>
-    </section>
-  </main>
+      <div id="noRecords" class="empty-state" style="display:none">
+        Nenhum lançamento encontrado nesse período.
+      </div>
+    </div>
+  </section>
 
-  <script>
-    const FUEL_KEY = "motoristaCombustivel";
-    const DAYS_KEY = "motoristaDias";
-    let currentResult = null;
+  <section id="ajustesScreen" class="screen">
+    <div class="card">
+      <h2>Combustível</h2>
 
-    function getNumber(id) {
-      return Number(document.getElementById(id).value.replace(",", "."));
-    }
+      <div id="fuelForm">
+        <label for="fuelType">Tipo</label>
+        <select id="fuelType">
+          <option value="Gasolina">Gasolina</option>
+          <option value="Etanol">Álcool / Etanol</option>
+          <option value="GNV">Gás / GNV</option>
+        </select>
 
-    function money(value) {
-      return Number(value).toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-      });
-    }
+        <label for="fuelPrice">Preço por litro ou m³</label>
+        <input id="fuelPrice" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ex.: 6,19">
 
-    function decimal(value, digits = 2) {
-      return Number(value).toLocaleString("pt-BR", {
-        minimumFractionDigits: digits,
-        maximumFractionDigits: digits
-      });
-    }
+        <label for="consumption">Consumo do veículo</label>
+        <input id="consumption" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ex.: 10 km/L">
 
-    function localDateString(date = new Date()) {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    }
+        <button class="secondary" type="button" onclick="saveFuel()">Salvar combustível</button>
+      </div>
 
-    function formatDate(dateString) {
-      const [year, month, day] = dateString.split("-");
-      return `${day}/${month}/${year}`;
-    }
+      <div id="fuelSummary" class="fuel-summary">
+        <div>
+          <strong id="fuelSummaryTitle"></strong>
+          <small id="fuelSummaryDetails"></small>
+        </div>
 
-    function openTab(tab) {
-      const calculator = tab === "calculator";
+        <button class="edit-button" type="button" onclick="editFuel()">✏️</button>
+      </div>
+    </div>
+  </section>
+</div>
 
-      document.getElementById("calculatorTab").classList.toggle("active", calculator);
-      document.getElementById("summaryTab").classList.toggle("active", !calculator);
-      document.getElementById("tabCalculatorButton").classList.toggle("active", calculator);
-      document.getElementById("tabSummaryButton").classList.toggle("active", !calculator);
+<nav class="bottom">
+  <button id="navNovo" class="active" onclick="openScreen('novo',this)">
+    <b>＋</b>Novo
+  </button>
 
-      if (!calculator) generateSummary();
-    }
+  <button id="navHistorico" onclick="openScreen('historico',this)">
+    <b>📊</b>Histórico
+  </button>
 
-    function saveFuelData() {
-      const data = {
-        fuelType: document.getElementById("fuelType").value,
-        fuelPrice: getNumber("fuelPrice"),
-        consumption: getNumber("consumption")
-      };
+  <button id="navAjustes" onclick="openScreen('ajustes',this)">
+    <b>⚙️</b>Ajustes
+  </button>
+</nav>
 
-      if (!data.fuelPrice || data.fuelPrice <= 0) {
-        alert("Informe um preço válido.");
-        return;
-      }
+<script>
+const FUEL_KEY = "motoristaCombustivel";
+const DAYS_KEY = "motoristaDias";
 
-      if (!data.consumption || data.consumption <= 0) {
-        alert("Informe um consumo válido.");
-        return;
-      }
+let currentResult = null;
+let calendarDate = new Date();
+let selectedDate = "";
 
-      localStorage.setItem(FUEL_KEY, JSON.stringify(data));
-      showFuelSummary(data);
-    }
+function money(value){
+  return Number(value || 0).toLocaleString("pt-BR",{
+    style:"currency",
+    currency:"BRL"
+  });
+}
 
-    function showFuelSummary(data) {
-      const unit = data.fuelType === "GNV" ? "m³" : "litro";
-      const consumptionUnit = data.fuelType === "GNV" ? "km/m³" : "km/L";
+function decimal(value,digits=1){
+  return Number(value || 0).toLocaleString("pt-BR",{
+    minimumFractionDigits:digits,
+    maximumFractionDigits:digits
+  });
+}
 
-      document.getElementById("summaryFuelType").textContent = data.fuelType;
-      document.getElementById("summaryFuelDetails").innerHTML =
-        `${money(data.fuelPrice)} por ${unit}<br>${decimal(data.consumption, 1)} ${consumptionUnit}`;
+function numberValue(id){
+  return Number(document.getElementById(id).value.replace(",","."));
+}
 
-      document.getElementById("fuelForm").style.display = "none";
-      document.getElementById("fuelSummary").style.display = "flex";
-    }
+function localDateString(date=new Date()){
+  const year=date.getFullYear();
+  const month=String(date.getMonth()+1).padStart(2,"0");
+  const day=String(date.getDate()).padStart(2,"0");
+  return `${year}-${month}-${day}`;
+}
 
-    function editFuelData() {
-      document.getElementById("fuelSummary").style.display = "none";
-      document.getElementById("fuelForm").style.display = "block";
-    }
+function formatDate(dateString){
+  const [year,month,day]=dateString.split("-");
+  return `${day}/${month}/${year}`;
+}
 
-    function loadFuelData() {
-      const saved = localStorage.getItem(FUEL_KEY);
-      if (!saved) return;
+function openScreen(name,button){
+  document.querySelectorAll(".screen").forEach(screen=>{
+    screen.classList.remove("active");
+  });
 
-      try {
-        const data = JSON.parse(saved);
-        document.getElementById("fuelType").value = data.fuelType || "Gasolina";
-        document.getElementById("fuelPrice").value = data.fuelPrice || "";
-        document.getElementById("consumption").value = data.consumption || "";
-        showFuelSummary(data);
-      } catch {
-        localStorage.removeItem(FUEL_KEY);
-      }
-    }
+  document.getElementById(`${name}Screen`).classList.add("active");
 
-    function calculate() {
-      const fuelType = document.getElementById("fuelType").value;
-      const fuelPrice = getNumber("fuelPrice");
-      const consumption = getNumber("consumption");
-      const distance = getNumber("distance");
-      const earnings = getNumber("earnings");
+  document.querySelectorAll(".bottom button").forEach(btn=>{
+    btn.classList.remove("active");
+  });
 
-      if (!fuelPrice || fuelPrice <= 0) {
-        alert("Cadastre o preço do combustível.");
-        return;
-      }
-      if (!consumption || consumption <= 0) {
-        alert("Cadastre o consumo do veículo.");
-        return;
-      }
-      if (!distance || distance <= 0) {
-        alert("Informe os quilômetros rodados.");
-        return;
-      }
-      if (Number.isNaN(earnings) || earnings < 0) {
-        alert("Informe um faturamento válido.");
-        return;
-      }
+  button.classList.add("active");
 
-      const quantityUsed = distance / consumption;
-      const fuelCost = quantityUsed * fuelPrice;
-      const grossPerKm = earnings / distance;
-      const profit = earnings - fuelCost;
-      const profitPerKm = profit / distance;
+  if(name==="historico"){
+    updatePeriodSummary();
+    renderCalendar();
+  }
+}
 
-      currentResult = {
-        fuelType,
-        fuelPrice,
-        consumption,
-        distance,
-        earnings,
-        quantityUsed,
-        fuelCost,
-        profit
-      };
+function getDays(){
+  try{
+    return JSON.parse(localStorage.getItem(DAYS_KEY)) || [];
+  }catch{
+    return [];
+  }
+}
 
-      document.getElementById("resultFuelType").textContent = fuelType;
-      document.getElementById("resultLiters").textContent =
-        decimal(quantityUsed) + (fuelType === "GNV" ? " m³" : " litros");
-      document.getElementById("resultFuelCost").textContent = money(fuelCost);
-      document.getElementById("resultGrossPerKm").textContent = money(grossPerKm);
-      document.getElementById("resultNet").textContent = money(profit);
-      document.getElementById("resultNetPerKm").textContent = money(profitPerKm);
-      document.getElementById("profitBox").classList.toggle("negative", profit < 0);
+function saveDays(days){
+  localStorage.setItem(DAYS_KEY,JSON.stringify(days));
+}
 
-      document.getElementById("savedDayMessage").style.display = "none";
-      document.getElementById("results").style.display = "block";
-      document.getElementById("results").scrollIntoView({ behavior: "smooth" });
-    }
+function aggregate(days){
+  return days.reduce((total,day)=>{
+    total.earnings += Number(day.earnings || 0);
+    total.fuelCost += Number(day.fuelCost || 0);
+    total.profit += Number(day.profit || 0);
+    total.distance += Number(day.distance || 0);
+    return total;
+  },{
+    earnings:0,
+    fuelCost:0,
+    profit:0,
+    distance:0
+  });
+}
 
-    function getSavedDays() {
-      try {
-        return JSON.parse(localStorage.getItem(DAYS_KEY)) || [];
-      } catch {
-        return [];
-      }
-    }
+function saveFuel(){
+  const data={
+    fuelType:document.getElementById("fuelType").value,
+    fuelPrice:numberValue("fuelPrice"),
+    consumption:numberValue("consumption")
+  };
 
-    function saveDay() {
-      if (!currentResult) {
-        alert("Faça o cálculo antes de salvar.");
-        return;
-      }
+  if(!data.fuelPrice || data.fuelPrice<=0){
+    alert("Informe um preço válido.");
+    return;
+  }
 
-      const date = document.getElementById("recordDate").value;
-      if (!date) {
-        alert("Escolha a data.");
-        return;
-      }
+  if(!data.consumption || data.consumption<=0){
+    alert("Informe um consumo válido.");
+    return;
+  }
 
-      const days = getSavedDays();
-      const record = {
-        id: Date.now(),
-        date,
-        ...currentResult
-      };
+  localStorage.setItem(FUEL_KEY,JSON.stringify(data));
+  showFuel(data);
+}
 
-      days.push(record);
-      days.sort((a, b) => a.date.localeCompare(b.date));
-      localStorage.setItem(DAYS_KEY, JSON.stringify(days));
+function loadFuel(){
+  try{
+    const data=JSON.parse(localStorage.getItem(FUEL_KEY));
+    if(!data) return;
 
-      const message = document.getElementById("savedDayMessage");
-      message.style.display = "block";
-      generateSummary();
-    }
+    document.getElementById("fuelType").value=data.fuelType;
+    document.getElementById("fuelPrice").value=data.fuelPrice;
+    document.getElementById("consumption").value=data.consumption;
 
-    function clearDailyFields() {
-      document.getElementById("distance").value = "";
-      document.getElementById("earnings").value = "";
-      document.getElementById("results").style.display = "none";
-      currentResult = null;
-    }
+    showFuel(data);
+  }catch{}
+}
 
-    function generateSummary() {
-      const start = document.getElementById("startDate").value;
-      const end = document.getElementById("endDate").value;
-      const days = getSavedDays();
+function showFuel(data){
+  const priceUnit=data.fuelType==="GNV" ? "m³" : "litro";
+  const consumptionUnit=data.fuelType==="GNV" ? "km/m³" : "km/L";
 
-      const filtered = days.filter(day => {
-        if (start && day.date < start) return false;
-        if (end && day.date > end) return false;
-        return true;
-      });
+  document.getElementById("fuelSummaryTitle").textContent=data.fuelType;
+  document.getElementById("fuelSummaryDetails").innerHTML=
+    `${money(data.fuelPrice)} por ${priceUnit}<br>`+
+    `${decimal(data.consumption)} ${consumptionUnit}`;
 
-      const totals = filtered.reduce((acc, day) => {
-        acc.earnings += Number(day.earnings);
-        acc.fuelCost += Number(day.fuelCost);
-        acc.profit += Number(day.profit);
-        return acc;
-      }, { earnings: 0, fuelCost: 0, profit: 0 });
+  document.getElementById("fuelForm").style.display="none";
+  document.getElementById("fuelSummary").style.display="flex";
+}
 
-      document.getElementById("summaryEarnings").textContent = money(totals.earnings);
-      document.getElementById("summaryFuelCost").textContent = money(totals.fuelCost);
-      document.getElementById("summaryProfit").textContent = money(totals.profit);
+function editFuel(){
+  document.getElementById("fuelSummary").style.display="none";
+  document.getElementById("fuelForm").style.display="block";
+}
 
-      renderHistory(filtered);
-    }
+function calculate(){
+  let fuel;
 
-    function renderHistory(days) {
-      const list = document.getElementById("historyList");
+  try{
+    fuel=JSON.parse(localStorage.getItem(FUEL_KEY));
+  }catch{}
 
-      if (!days.length) {
-        list.innerHTML = '<div class="empty-state">Nenhum dia salvo neste período.</div>';
-        return;
-      }
+  if(!fuel){
+    alert("Cadastre o combustível na aba Ajustes.");
+    document.getElementById("navAjustes").click();
+    return;
+  }
 
-      list.innerHTML = [...days].reverse().map(day => `
-        <article class="history-item">
-          <div class="history-date">${formatDate(day.date)}</div>
-          <div class="history-details">
-            <span>Faturamento: <strong>${money(day.earnings)}</strong></span>
-            <span>Combustível: <strong>${money(day.fuelCost)}</strong></span>
-            <span>Lucro: <strong>${money(day.profit)}</strong></span>
-            <span>Distância: <strong>${decimal(day.distance, 1)} km</strong></span>
-          </div>
-          <button class="secondary danger" type="button" onclick="deleteDay(${day.id})">
-            Excluir registro
-          </button>
-        </article>
-      `).join("");
-    }
+  const distance=numberValue("distance");
+  const earnings=numberValue("earnings");
 
-    function deleteDay(id) {
-      if (!confirm("Deseja excluir este registro?")) return;
+  if(!distance || distance<=0){
+    alert("Informe os quilômetros rodados.");
+    return;
+  }
 
-      const updated = getSavedDays().filter(day => day.id !== id);
-      localStorage.setItem(DAYS_KEY, JSON.stringify(updated));
-      generateSummary();
-    }
+  if(Number.isNaN(earnings) || earnings<0){
+    alert("Informe um faturamento válido.");
+    return;
+  }
 
-    function setInitialDates() {
-      const today = new Date();
-      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+  const quantityUsed=distance/Number(fuel.consumption);
+  const fuelCost=quantityUsed*Number(fuel.fuelPrice);
+  const profit=earnings-fuelCost;
 
-      document.getElementById("recordDate").value = localDateString(today);
-      document.getElementById("startDate").value = localDateString(firstDay);
-      document.getElementById("endDate").value = localDateString(today);
-    }
+  currentResult={
+    fuelType:fuel.fuelType,
+    fuelPrice:Number(fuel.fuelPrice),
+    consumption:Number(fuel.consumption),
+    distance,
+    earnings,
+    quantityUsed,
+    fuelCost,
+    profit
+  };
 
-    setInitialDates();
-    loadFuelData();
-    generateSummary();
-  </script>
+  document.getElementById("resultEarnings").textContent=money(earnings);
+  document.getElementById("resultFuel").textContent=money(fuelCost);
+  document.getElementById("resultKm").textContent=`${decimal(distance)} km`;
+  document.getElementById("resultProfit").textContent=money(profit);
+  document.getElementById("profitBox").classList.toggle("negative",profit<0);
+
+  document.getElementById("saveMessage").style.display="none";
+  document.getElementById("results").style.display="block";
+  document.getElementById("results").scrollIntoView({
+    behavior:"smooth",
+    block:"start"
+  });
+}
+
+function saveDay(){
+  if(!currentResult){
+    alert("Faça o cálculo antes de salvar.");
+    return;
+  }
+
+  const date=document.getElementById("recordDate").value;
+
+  if(!date){
+    alert("Escolha a data.");
+    return;
+  }
+
+  const days=getDays();
+
+  days.push({
+    id:Date.now(),
+    date,
+    ...currentResult
+  });
+
+  days.sort((a,b)=>a.date.localeCompare(b.date));
+  saveDays(days);
+
+  const message=document.getElementById("saveMessage");
+  message.textContent="Dia salvo com sucesso!";
+  message.style.display="block";
+
+  document.getElementById("distance").value="";
+  document.getElementById("earnings").value="";
+  currentResult=null;
+
+  updatePeriodSummary();
+  renderCalendar();
+
+  setTimeout(()=>{
+    document.getElementById("results").style.display="none";
+    message.style.display="none";
+    document.getElementById("recordDate").value=localDateString();
+    document.getElementById("distance").focus();
+  },1300);
+}
+
+function clearForm(){
+  document.getElementById("distance").value="";
+  document.getElementById("earnings").value="";
+  document.getElementById("results").style.display="none";
+  document.getElementById("saveMessage").style.display="none";
+  currentResult=null;
+}
+
+function updatePeriodSummary(){
+  const start=document.getElementById("startDate").value;
+  const end=document.getElementById("endDate").value;
+
+  if(start && end && start>end){
+    alert("A data inicial não pode ser maior que a data final.");
+    return;
+  }
+
+  const filtered=getDays().filter(day=>{
+    if(start && day.date<start) return false;
+    if(end && day.date>end) return false;
+    return true;
+  });
+
+  const totals=aggregate(filtered);
+  const workedDays=new Set(filtered.map(day=>day.date)).size;
+
+  document.getElementById("periodDays").textContent=workedDays;
+  document.getElementById("periodEarnings").textContent=money(totals.earnings);
+  document.getElementById("periodFuel").textContent=money(totals.fuelCost);
+  document.getElementById("periodProfit").textContent=money(totals.profit);
+  document.getElementById("periodKm").textContent=`${decimal(totals.distance)} km`;
+
+  document.getElementById("noRecords").style.display=
+    filtered.length ? "none" : "block";
+}
+
+function toggleCalendar(){
+  const panel=document.getElementById("calendarPanel");
+  const button=document.getElementById("calendarToggle");
+  const opening=!panel.classList.contains("open");
+
+  panel.classList.toggle("open",opening);
+  button.textContent=opening ? "Fechar calendário" : "📅 Ver calendário";
+
+  if(opening){
+    renderCalendar();
+    panel.scrollIntoView({
+      behavior:"smooth",
+      block:"nearest"
+    });
+  }
+}
+
+function changeMonth(offset){
+  calendarDate=new Date(
+    calendarDate.getFullYear(),
+    calendarDate.getMonth()+offset,
+    1
+  );
+
+  selectedDate="";
+  document.getElementById("daySummary").style.display="none";
+  renderCalendar();
+}
+
+function renderCalendar(){
+  const year=calendarDate.getFullYear();
+  const month=calendarDate.getMonth();
+  const firstWeekday=new Date(year,month,1).getDay();
+  const totalDays=new Date(year,month+1,0).getDate();
+  const today=localDateString();
+
+  const savedDates=new Set(getDays().map(day=>day.date));
+
+  document.getElementById("calendarTitle").textContent=
+    calendarDate.toLocaleDateString("pt-BR",{
+      month:"long",
+      year:"numeric"
+    });
+
+  let html="";
+
+  for(let i=0;i<firstWeekday;i++){
+    html+='<button class="calendar-day empty" tabindex="-1"></button>';
+  }
+
+  for(let day=1;day<=totalDays;day++){
+    const date=
+      `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+
+    const classes=["calendar-day"];
+
+    if(date===today) classes.push("today");
+    if(savedDates.has(date)) classes.push("saved");
+    if(date===selectedDate) classes.push("selected");
+
+    html+=`
+      <button
+        type="button"
+        class="${classes.join(" ")}"
+        onclick="showDaySummary('${date}')"
+      >${day}</button>
+    `;
+  }
+
+  document.getElementById("calendarGrid").innerHTML=html;
+}
+
+function showDaySummary(date){
+  selectedDate=date;
+  renderCalendar();
+
+  const records=getDays().filter(day=>day.date===date);
+  const summary=document.getElementById("daySummary");
+
+  document.getElementById("daySummaryTitle").textContent=formatDate(date);
+
+  if(!records.length){
+    document.getElementById("dayEarnings").textContent="R$ 0,00";
+    document.getElementById("dayFuel").textContent="R$ 0,00";
+    document.getElementById("dayProfit").textContent="R$ 0,00";
+    document.getElementById("dayKm").textContent="0,0 km";
+    summary.style.display="block";
+    return;
+  }
+
+  const totals=aggregate(records);
+
+  document.getElementById("dayEarnings").textContent=money(totals.earnings);
+  document.getElementById("dayFuel").textContent=money(totals.fuelCost);
+  document.getElementById("dayProfit").textContent=money(totals.profit);
+  document.getElementById("dayKm").textContent=`${decimal(totals.distance)} km`;
+
+  summary.style.display="block";
+  setTimeout(() => {
+    summary.scrollIntoView({
+      behavior:"smooth",
+      block:"center"
+    });
+  }, 50);
+}
+
+function initializeDates(){
+  const today=new Date();
+  const firstDay=new Date(today.getFullYear(),today.getMonth(),1);
+
+  document.getElementById("recordDate").value=localDateString(today);
+  document.getElementById("startDate").value=localDateString(firstDay);
+  document.getElementById("endDate").value=localDateString(today);
+
+  calendarDate=new Date(today.getFullYear(),today.getMonth(),1);
+}
+
+initializeDates();
+loadFuel();
+updatePeriodSummary();
+renderCalendar();
+</script>
 </body>
 </html>
