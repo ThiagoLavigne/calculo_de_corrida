@@ -175,6 +175,7 @@ button{
   display:none;
   margin-top:16px;
   padding-top:16px;
+  padding-bottom:96px;
   border-top:1px solid #e5e7eb;
 }
 
@@ -363,6 +364,9 @@ button{
       <label for="earnings">Faturamento</label>
       <input id="earnings" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ex.: 300,00">
 
+      <label for="workedHours">Horas trabalhadas</label>
+      <input id="workedHours" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ex.: 8">
+
       <button type="button" onclick="calculate()">Calcular</button>
       <button class="light" type="button" onclick="clearForm()">Limpar</button>
     </div>
@@ -443,6 +447,10 @@ button{
           <span>Quilômetros</span>
           <strong id="periodKm">0 km</strong>
         </div>
+        <div class="row">
+          <span>Horas trabalhadas</span>
+          <strong id="periodHours">0 h</strong>
+        </div>
       </div>
 
       <button id="calendarToggle" class="secondary" type="button" onclick="toggleCalendar()">
@@ -481,6 +489,33 @@ button{
           <div class="row">
             <span>Quilômetros</span>
             <strong id="dayKm">0 km</strong>
+          </div>
+          <div class="row">
+            <span>Horas trabalhadas</span>
+            <strong id="dayHours">0 h</strong>
+          </div>
+
+          <button id="editDayButton" class="light" type="button" onclick="openDayEdit()">
+            Editar informações
+          </button>
+
+          <div id="dayEditForm" style="display:none;margin-top:14px;">
+            <label for="editDistance">Quilômetros</label>
+            <input id="editDistance" type="number" inputmode="decimal" min="0" step="0.1">
+
+            <label for="editEarnings">Faturamento</label>
+            <input id="editEarnings" type="number" inputmode="decimal" min="0" step="0.01">
+
+            <label for="editWorkedHours">Horas trabalhadas</label>
+            <input id="editWorkedHours" type="number" inputmode="decimal" min="0" step="0.1">
+
+            <button class="secondary" type="button" onclick="saveDayEdit()">
+              Salvar alterações
+            </button>
+
+            <button class="light" type="button" onclick="cancelDayEdit()">
+              Cancelar
+            </button>
           </div>
         </div>
       </div>
@@ -613,12 +648,14 @@ function aggregate(days){
     total.fuelCost += Number(day.fuelCost || 0);
     total.profit += Number(day.profit || 0);
     total.distance += Number(day.distance || 0);
+    total.workedHours += Number(day.workedHours || 0);
     return total;
   },{
     earnings:0,
     fuelCost:0,
     profit:0,
-    distance:0
+    distance:0,
+    workedHours:0
   });
 }
 
@@ -689,6 +726,7 @@ function calculate(){
 
   const distance=numberValue("distance");
   const earnings=numberValue("earnings");
+  const workedHours=numberValue("workedHours");
 
   if(!distance || distance<=0){
     alert("Informe os quilômetros rodados.");
@@ -710,6 +748,7 @@ function calculate(){
     consumption:Number(fuel.consumption),
     distance,
     earnings,
+    workedHours,
     quantityUsed,
     fuelCost,
     profit
@@ -759,6 +798,7 @@ function saveDay(){
 
   document.getElementById("distance").value="";
   document.getElementById("earnings").value="";
+  document.getElementById("workedHours").value="";
   currentResult=null;
 
   updatePeriodSummary();
@@ -775,6 +815,7 @@ function saveDay(){
 function clearForm(){
   document.getElementById("distance").value="";
   document.getElementById("earnings").value="";
+  document.getElementById("workedHours").value="";
   document.getElementById("results").style.display="none";
   document.getElementById("saveMessage").style.display="none";
   currentResult=null;
@@ -803,6 +844,7 @@ function updatePeriodSummary(){
   document.getElementById("periodFuel").textContent=money(totals.fuelCost);
   document.getElementById("periodProfit").textContent=money(totals.profit);
   document.getElementById("periodKm").textContent=`${decimal(totals.distance)} km`;
+  document.getElementById("periodHours").textContent=`${decimal(totals.workedHours)} h`;
 
   document.getElementById("noRecords").style.display=
     filtered.length ? "none" : "block";
@@ -882,6 +924,8 @@ function renderCalendar(){
 
 function showDaySummary(date){
   selectedDate=date;
+  document.getElementById("dayEditForm").style.display="none";
+  document.getElementById("editDayButton").style.display="block";
   renderCalendar();
 
   const records=getDays().filter(day=>day.date===date);
@@ -890,10 +934,12 @@ function showDaySummary(date){
   document.getElementById("daySummaryTitle").textContent=formatDate(date);
 
   if(!records.length){
+    document.getElementById("editDayButton").style.display="none";
     document.getElementById("dayEarnings").textContent="R$ 0,00";
     document.getElementById("dayFuel").textContent="R$ 0,00";
     document.getElementById("dayProfit").textContent="R$ 0,00";
     document.getElementById("dayKm").textContent="0,0 km";
+    document.getElementById("dayHours").textContent="0,0 h";
     summary.style.display="block";
     return;
   }
@@ -904,6 +950,7 @@ function showDaySummary(date){
   document.getElementById("dayFuel").textContent=money(totals.fuelCost);
   document.getElementById("dayProfit").textContent=money(totals.profit);
   document.getElementById("dayKm").textContent=`${decimal(totals.distance)} km`;
+  document.getElementById("dayHours").textContent=`${decimal(totals.workedHours)} h`;
 
   summary.style.display="block";
   setTimeout(() => {
@@ -912,6 +959,95 @@ function showDaySummary(date){
       block:"center"
     });
   }, 50);
+}
+
+
+function openDayEdit(){
+  if(!selectedDate) return;
+
+  const records=getDays().filter(day=>day.date===selectedDate);
+  if(!records.length) return;
+
+  const totals=aggregate(records);
+
+  document.getElementById("editDistance").value=totals.distance;
+  document.getElementById("editEarnings").value=totals.earnings;
+  document.getElementById("editWorkedHours").value=totals.workedHours;
+
+  document.getElementById("dayEditForm").style.display="block";
+  document.getElementById("editDayButton").style.display="none";
+
+  document.getElementById("dayEditForm").scrollIntoView({
+    behavior:"smooth",
+    block:"center"
+  });
+}
+
+function cancelDayEdit(){
+  document.getElementById("dayEditForm").style.display="none";
+  document.getElementById("editDayButton").style.display="block";
+}
+
+function saveDayEdit(){
+  if(!selectedDate) return;
+
+  const distance=Number(document.getElementById("editDistance").value.replace(",","."));
+  const earnings=Number(document.getElementById("editEarnings").value.replace(",","."));
+  const workedHours=Number(document.getElementById("editWorkedHours").value.replace(",","."));
+
+  if(!distance || distance<=0){
+    alert("Informe uma quantidade válida de quilômetros.");
+    return;
+  }
+
+  if(Number.isNaN(earnings) || earnings<0){
+    alert("Informe um faturamento válido.");
+    return;
+  }
+
+  if(Number.isNaN(workedHours) || workedHours<0){
+    alert("Informe uma quantidade válida de horas.");
+    return;
+  }
+
+  const days=getDays();
+  const selectedRecords=days.filter(day=>day.date===selectedDate);
+
+  if(!selectedRecords.length){
+    alert("Registro do dia não encontrado.");
+    return;
+  }
+
+  const base=selectedRecords[0];
+  const consumption=Number(base.consumption || 0);
+  const fuelPrice=Number(base.fuelPrice || 0);
+
+  const quantityUsed=consumption>0 ? distance/consumption : 0;
+  const fuelCost=quantityUsed*fuelPrice;
+  const profit=earnings-fuelCost;
+
+  const updatedRecord={
+    ...base,
+    distance,
+    earnings,
+    workedHours,
+    quantityUsed,
+    fuelCost,
+    profit
+  };
+
+  const updatedDays=days.filter(day=>day.date!==selectedDate);
+  updatedDays.push(updatedRecord);
+  updatedDays.sort((a,b)=>a.date.localeCompare(b.date));
+
+  saveDays(updatedDays);
+
+  cancelDayEdit();
+  showDaySummary(selectedDate);
+  updatePeriodSummary();
+  renderCalendar();
+
+  alert("Informações atualizadas com sucesso.");
 }
 
 function initializeDates(){
