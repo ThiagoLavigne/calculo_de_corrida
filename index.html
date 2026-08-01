@@ -72,6 +72,43 @@ label{
   font-weight:bold;
 }
 
+.input-title-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:12px 0 6px;
+}
+
+.input-title-row label{
+  margin:0;
+}
+
+.measure-toggle{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  width:132px;
+  padding:3px;
+  border-radius:9px;
+  background:#e5e7eb;
+}
+
+.measure-toggle button{
+  width:auto;
+  min-height:34px;
+  padding:5px 9px;
+  border-radius:7px;
+  background:transparent;
+  color:var(--muted);
+  font-size:13px;
+}
+
+.measure-toggle button.active{
+  background:#fff;
+  color:var(--text);
+  box-shadow:0 2px 6px rgba(0,0,0,.10);
+}
+
 input,select,button{font:inherit}
 
 input,select{
@@ -358,7 +395,15 @@ button{
     <div class="card">
       <h2>Novo lançamento</h2>
 
-      <label for="distance">Quilômetros rodados</label>
+      <div class="input-title-row">
+        <label id="distanceLabel" for="distance">Quilômetros rodados</label>
+
+        <div class="measure-toggle" aria-label="Escolher forma de cálculo">
+          <button id="kmModeButton" class="active" type="button" onclick="setCalculationMode('km')">KM</button>
+          <button id="litersModeButton" type="button" onclick="setCalculationMode('liters')">Litros</button>
+        </div>
+      </div>
+
       <input id="distance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ex.: 150">
 
       <label for="earnings">Faturamento</label>
@@ -579,6 +624,7 @@ const DAYS_KEY = "motoristaDias";
 
 let currentResult = null;
 let calendarDate = new Date();
+let calculationMode = "km";
 let selectedDate = "";
 
 function money(value){
@@ -777,6 +823,31 @@ function editFuel(){
   document.getElementById("fuelForm").style.display="block";
 }
 
+
+function setCalculationMode(mode){
+  calculationMode=mode;
+
+  const kmButton=document.getElementById("kmModeButton");
+  const litersButton=document.getElementById("litersModeButton");
+  const label=document.getElementById("distanceLabel");
+  const input=document.getElementById("distance");
+
+  kmButton.classList.toggle("active",mode==="km");
+  litersButton.classList.toggle("active",mode==="liters");
+
+  if(mode==="liters"){
+    label.textContent="Litros consumidos";
+    input.placeholder="Ex.: 25,5";
+  }else{
+    label.textContent="Quilômetros rodados";
+    input.placeholder="Ex.: 150";
+  }
+
+  input.value="";
+  document.getElementById("results").style.display="none";
+  currentResult=null;
+}
+
 function calculate(){
   let fuel;
 
@@ -790,12 +861,16 @@ function calculate(){
     return;
   }
 
-  const distance=numberValue("distance");
+  const enteredValue=numberValue("distance");
   const earnings=numberValue("earnings");
   const workedMinutes=timeTextToMinutes(document.getElementById("workedHours").value);
 
-  if(!distance || distance<=0){
-    alert("Informe os quilômetros rodados.");
+  if(!enteredValue || enteredValue<=0){
+    alert(
+      calculationMode==="liters"
+        ? "Informe a quantidade de litros consumidos."
+        : "Informe os quilômetros rodados."
+    );
     return;
   }
 
@@ -809,14 +884,27 @@ function calculate(){
     return;
   }
 
-  const quantityUsed=distance/Number(fuel.consumption);
-  const fuelCost=quantityUsed*Number(fuel.fuelPrice);
+  const consumption=Number(fuel.consumption);
+  const fuelPrice=Number(fuel.fuelPrice);
+
+  const quantityUsed=
+    calculationMode==="liters"
+      ? enteredValue
+      : enteredValue/consumption;
+
+  const distance=
+    calculationMode==="liters"
+      ? enteredValue*consumption
+      : enteredValue;
+
+  const fuelCost=quantityUsed*fuelPrice;
   const profit=earnings-fuelCost;
 
   currentResult={
     fuelType:fuel.fuelType,
     fuelPrice:Number(fuel.fuelPrice),
     consumption:Number(fuel.consumption),
+    calculationMode,
     distance,
     earnings,
     workedMinutes,
