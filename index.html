@@ -481,6 +481,10 @@ button{
           <strong id="periodEarnings">R$ 0,00</strong>
         </div>
         <div class="row">
+          <span>Litros consumidos</span>
+          <strong id="periodLiters">0,0 L</strong>
+        </div>
+        <div class="row">
           <span>Gasto combustível</span>
           <strong id="periodFuel">R$ 0,00</strong>
         </div>
@@ -522,6 +526,10 @@ button{
           <div class="row">
             <span>Faturamento</span>
             <strong id="dayEarnings">R$ 0,00</strong>
+          </div>
+          <div class="row">
+            <span>Litros consumidos</span>
+            <strong id="dayLiters">0,0 L</strong>
           </div>
           <div class="row">
             <span>Gasto combustível</span>
@@ -755,6 +763,7 @@ function aggregate(days){
     total.fuelCost += Number(day.fuelCost || 0);
     total.profit += Number(day.profit || 0);
     total.distance += Number(day.distance || 0);
+    total.quantityUsed += Number(day.quantityUsed || 0);
 
     if(day.workedMinutes !== undefined){
       total.workedMinutes += Number(day.workedMinutes || 0);
@@ -767,6 +776,7 @@ function aggregate(days){
     fuelCost:0,
     profit:0,
     distance:0,
+    quantityUsed:0,
     workedMinutes:0
   });
 }
@@ -1000,6 +1010,7 @@ function updatePeriodSummary(){
 
   document.getElementById("periodDays").textContent=workedDays;
   document.getElementById("periodEarnings").textContent=money(totals.earnings);
+  document.getElementById("periodLiters").textContent=`${decimal(totals.quantityUsed)} L`;
   document.getElementById("periodFuel").textContent=money(totals.fuelCost);
   document.getElementById("periodProfit").textContent=money(totals.profit);
   document.getElementById("periodKm").textContent=`${decimal(totals.distance)} km`;
@@ -1095,6 +1106,7 @@ function showDaySummary(date){
   if(!records.length){
     document.getElementById("editDayButton").style.display="none";
     document.getElementById("dayEarnings").textContent="R$ 0,00";
+    document.getElementById("dayLiters").textContent="0,0 L";
     document.getElementById("dayFuel").textContent="R$ 0,00";
     document.getElementById("dayProfit").textContent="R$ 0,00";
     document.getElementById("dayKm").textContent="0,0 km";
@@ -1106,6 +1118,7 @@ function showDaySummary(date){
   const totals=aggregate(records);
 
   document.getElementById("dayEarnings").textContent=money(totals.earnings);
+  document.getElementById("dayLiters").textContent=`${decimal(totals.quantityUsed)} L`;
   document.getElementById("dayFuel").textContent=money(totals.fuelCost);
   document.getElementById("dayProfit").textContent=money(totals.profit);
   document.getElementById("dayKm").textContent=`${decimal(totals.distance)} km`;
