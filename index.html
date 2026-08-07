@@ -395,16 +395,11 @@ button{
     <div class="card">
       <h2>Novo lançamento</h2>
 
-      <div class="input-title-row">
-        <label id="distanceLabel" for="distance">Quilômetros rodados</label>
+      <label for="litersUsed">Litros consumidos</label>
+      <input id="litersUsed" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ex.: 25,5">
 
-        <div class="measure-toggle" aria-label="Escolher forma de cálculo">
-          <button id="kmModeButton" class="active" type="button" onclick="setCalculationMode('km')">KM</button>
-          <button id="litersModeButton" type="button" onclick="setCalculationMode('liters')">Litros</button>
-        </div>
-      </div>
-
-      <input id="distance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ex.: 150">
+      <label for="distance">Quilômetros rodados</label>
+      <input id="distance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ex.: 250">
 
       <label for="earnings">Faturamento</label>
       <input id="earnings" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ex.: 300,00">
@@ -432,6 +427,11 @@ button{
       <div class="row">
         <span>Quilômetros</span>
         <strong id="resultKm">0 km</strong>
+      </div>
+
+      <div class="row">
+        <span>Consumo médio</span>
+        <strong id="resultKmPerLiter">0,0 km/L</strong>
       </div>
 
       <div id="profitBox" class="profit-box">
@@ -543,6 +543,11 @@ button{
             <span>Quilômetros</span>
             <strong id="dayKm">0 km</strong>
           </div>
+
+          <div class="row">
+            <span>Consumo médio</span>
+            <strong id="dayKmPerLiter">0,0 km/L</strong>
+          </div>
           <div class="row">
             <span>Horas trabalhadas</span>
             <strong id="dayHours">0 h</strong>
@@ -632,7 +637,6 @@ const DAYS_KEY = "motoristaDias";
 
 let currentResult = null;
 let calendarDate = new Date();
-let calculationMode = "km";
 let selectedDate = "";
 
 function money(value){
@@ -834,30 +838,6 @@ function editFuel(){
 }
 
 
-function setCalculationMode(mode){
-  calculationMode=mode;
-
-  const kmButton=document.getElementById("kmModeButton");
-  const litersButton=document.getElementById("litersModeButton");
-  const label=document.getElementById("distanceLabel");
-  const input=document.getElementById("distance");
-
-  kmButton.classList.toggle("active",mode==="km");
-  litersButton.classList.toggle("active",mode==="liters");
-
-  if(mode==="liters"){
-    label.textContent="Litros consumidos";
-    input.placeholder="Ex.: 25,5";
-  }else{
-    label.textContent="Quilômetros rodados";
-    input.placeholder="Ex.: 150";
-  }
-
-  input.value="";
-  document.getElementById("results").style.display="none";
-  currentResult=null;
-}
-
 function calculate(){
   let fuel;
 
@@ -871,16 +851,18 @@ function calculate(){
     return;
   }
 
-  const enteredValue=numberValue("distance");
+  const litersUsed=numberValue("litersUsed");
+  const distance=numberValue("distance");
   const earnings=numberValue("earnings");
   const workedMinutes=timeTextToMinutes(document.getElementById("workedHours").value);
 
-  if(!enteredValue || enteredValue<=0){
-    alert(
-      calculationMode==="liters"
-        ? "Informe a quantidade de litros consumidos."
-        : "Informe os quilômetros rodados."
-    );
+  if(!litersUsed || litersUsed<=0){
+    alert("Informe a quantidade de litros consumidos.");
+    return;
+  }
+
+  if(!distance || distance<=0){
+    alert("Informe os quilômetros rodados.");
     return;
   }
 
@@ -894,38 +876,29 @@ function calculate(){
     return;
   }
 
-  const consumption=Number(fuel.consumption);
   const fuelPrice=Number(fuel.fuelPrice);
-
-  const quantityUsed=
-    calculationMode==="liters"
-      ? enteredValue
-      : enteredValue/consumption;
-
-  const distance=
-    calculationMode==="liters"
-      ? enteredValue*consumption
-      : enteredValue;
-
+  const quantityUsed=litersUsed;
   const fuelCost=quantityUsed*fuelPrice;
   const profit=earnings-fuelCost;
+  const kmPerLiter=distance/quantityUsed;
 
   currentResult={
     fuelType:fuel.fuelType,
     fuelPrice:Number(fuel.fuelPrice),
     consumption:Number(fuel.consumption),
-    calculationMode,
     distance,
     earnings,
     workedMinutes,
     quantityUsed,
     fuelCost,
-    profit
+    profit,
+    kmPerLiter
   };
 
   document.getElementById("resultEarnings").textContent=money(earnings);
   document.getElementById("resultFuel").textContent=money(fuelCost);
   document.getElementById("resultKm").textContent=`${decimal(distance)} km`;
+  document.getElementById("resultKmPerLiter").textContent=`${decimal(kmPerLiter)} km/L`;
   document.getElementById("resultProfit").textContent=money(profit);
   document.getElementById("profitBox").classList.toggle("negative",profit<0);
 
@@ -965,6 +938,7 @@ function saveDay(){
   message.textContent="Dia salvo com sucesso!";
   message.style.display="block";
 
+  document.getElementById("litersUsed").value="";
   document.getElementById("distance").value="";
   document.getElementById("earnings").value="";
   document.getElementById("workedHours").value="";
@@ -982,6 +956,7 @@ function saveDay(){
 }
 
 function clearForm(){
+  document.getElementById("litersUsed").value="";
   document.getElementById("distance").value="";
   document.getElementById("earnings").value="";
   document.getElementById("workedHours").value="";
@@ -1110,6 +1085,7 @@ function showDaySummary(date){
     document.getElementById("dayFuel").textContent="R$ 0,00";
     document.getElementById("dayProfit").textContent="R$ 0,00";
     document.getElementById("dayKm").textContent="0,0 km";
+    document.getElementById("dayKmPerLiter").textContent="0,0 km/L";
     document.getElementById("dayHours").textContent="00:00";
     summary.style.display="block";
     return;
@@ -1122,6 +1098,10 @@ function showDaySummary(date){
   document.getElementById("dayFuel").textContent=money(totals.fuelCost);
   document.getElementById("dayProfit").textContent=money(totals.profit);
   document.getElementById("dayKm").textContent=`${decimal(totals.distance)} km`;
+  document.getElementById("dayKmPerLiter").textContent=
+    totals.quantityUsed>0
+      ? `${decimal(totals.distance/totals.quantityUsed)} km/L`
+      : "0,0 km/L";
   document.getElementById("dayHours").textContent=minutesToTimeText(totals.workedMinutes);
 
   summary.style.display="block";
@@ -1197,6 +1177,7 @@ function saveDayEdit(){
   const quantityUsed=consumption>0 ? distance/consumption : 0;
   const fuelCost=quantityUsed*fuelPrice;
   const profit=earnings-fuelCost;
+  const kmPerLiter=quantityUsed>0 ? distance/quantityUsed : 0;
 
   const updatedRecord={
     ...base,
@@ -1205,7 +1186,8 @@ function saveDayEdit(){
     workedMinutes,
     quantityUsed,
     fuelCost,
-    profit
+    profit,
+    kmPerLiter
   };
 
   const updatedDays=days.filter(day=>day.date!==selectedDate);
