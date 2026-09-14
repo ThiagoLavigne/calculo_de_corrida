@@ -211,6 +211,15 @@ function todasAsDatas(){
 function mudarAba(aba){
   ['calc','hist','rel'].forEach(x=>{document.getElementById('view-'+x).classList.toggle('active',aba===x);document.getElementById('tab-btn-'+x).classList.toggle('active',aba===x)});
   if(aba==='hist')renderCalendario();
+  if(aba==='rel'){
+    const datas=todasAsDatas();
+    if(datas.length){
+      const inicio=document.getElementById('rel-inicio'),fim=document.getElementById('rel-fim');
+      if(!inicio.value || inicio.value>datas[0]) inicio.value=datas[0];
+      if(!fim.value || fim.value<datas[datas.length-1]) fim.value=datas[datas.length-1];
+    }
+    gerarRelatorio();
+  }
 }
 function calcular(){
   const litros=numero(document.getElementById('litros').value),preco=numero(document.getElementById('preco').value),km=numero(document.getElementById('km').value),faturamento=numero(document.getElementById('faturamento').value),erro=document.getElementById('erro'),resultado=document.getElementById('resultado');
@@ -309,10 +318,15 @@ function excluirDiaSelecionado(){
 }
 
 function gerarRelatorio(){
-  const inicio=document.getElementById('rel-inicio').value,fim=document.getElementById('rel-fim').value,erro=document.getElementById('rel-erro'),res=document.getElementById('rel-resultado'),sem=document.getElementById('rel-sem-dados');
-  if(!inicio||!fim||inicio>fim){erro.classList.add('show');res.style.display='none';sem.style.display='none';return}
+  const erro=document.getElementById('rel-erro'),res=document.getElementById('rel-resultado'),sem=document.getElementById('rel-sem-dados');
+  let inicio=document.getElementById('rel-inicio').value,fim=document.getElementById('rel-fim').value;
+  const todas=todasAsDatas();
+  if(!todas.length){res.style.display='none';sem.style.display='block';erro.classList.remove('show');return}
+  if(!inicio) inicio=todas[0];
+  if(!fim) fim=todas[todas.length-1];
+  if(inicio>fim){erro.classList.add('show');res.style.display='none';sem.style.display='none';return}
   erro.classList.remove('show');
-  const datas=todasAsDatas().filter(d=>d>=inicio&&d<=fim),regs=datas.map(lerRegistro).filter(Boolean);
+  const datas=todas.filter(d=>d>=inicio&&d<=fim),regs=datas.map(lerRegistro).filter(Boolean);
   if(!regs.length){res.style.display='none';sem.style.display='block';return}
   sem.style.display='none';
   const t=regs.reduce((a,d)=>{a.km+=d.km;a.faturamento+=d.faturamento;a.litros+=d.litros;a.gasto+=d.gastoCombustivel;a.lucro+=d.lucroLiquido;return a},{km:0,faturamento:0,litros:0,gasto:0,lucro:0}),m=t.faturamento>0?t.lucro/t.faturamento*100:0,pos=t.lucro>=0;
@@ -335,7 +349,13 @@ function baixarRelatorioTodos(){
   a.href=url;a.download='relatorio_motorista_'+hojeStr()+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
 
-iniciarCalendario();carregarConfig();gerarRelatorio();
+iniciarCalendario();carregarConfig();
+const datasIniciais=todasAsDatas();
+if(datasIniciais.length){
+  document.getElementById('rel-inicio').value=datasIniciais[0];
+  document.getElementById('rel-fim').value=datasIniciais[datasIniciais.length-1];
+}
+gerarRelatorio();
 </script>
 </body>
 </html>
