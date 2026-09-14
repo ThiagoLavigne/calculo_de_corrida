@@ -2,1223 +2,250 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#111827">
-<title>Controle do Motorista</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Painel do Motorista</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#f3f4f6;
-  --card:#ffffff;
-  --primary:#111827;
-  --green:#16a34a;
-  --green-soft:#dcfce7;
-  --danger:#dc2626;
-  --text:#1f2937;
-  --muted:#6b7280;
-  --border:#d1d5db;
-}
-
-*{box-sizing:border-box}
-
-body{
-  margin:0;
-  min-height:100vh;
-  padding:18px 16px 92px;
-  font-family:Arial,Helvetica,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
-
-.container{
-  width:100%;
-  max-width:560px;
-  margin:auto;
-}
-
-h1{
-  margin:0 0 6px;
-  text-align:center;
-  font-size:27px;
-}
-
-.subtitle{
-  margin:0 0 18px;
-  text-align:center;
-  color:var(--muted);
-}
-
-.screen{display:none}
-.screen.active{display:block}
-
-.card{
-  width:100%;
-  margin-bottom:16px;
-  padding:18px;
-  overflow:hidden;
-  border-radius:16px;
-  background:var(--card);
-  box-shadow:0 4px 14px rgba(0,0,0,.08);
-}
-
-.card h2{
-  margin:0 0 16px;
-  font-size:20px;
-}
-
-label{
-  display:block;
-  margin:12px 0 6px;
-  font-weight:bold;
-}
-
-.input-title-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin:12px 0 6px;
-}
-
-.input-title-row label{
-  margin:0;
-}
-
-.measure-toggle{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  width:132px;
-  padding:3px;
-  border-radius:9px;
-  background:#e5e7eb;
-}
-
-.measure-toggle button{
-  width:auto;
-  min-height:34px;
-  padding:5px 9px;
-  border-radius:7px;
-  background:transparent;
-  color:var(--muted);
-  font-size:13px;
-}
-
-.measure-toggle button.active{
-  background:#fff;
-  color:var(--text);
-  box-shadow:0 2px 6px rgba(0,0,0,.10);
-}
-
-input,select,button{font:inherit}
-
-input,select{
-  display:block;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  height:48px;
-  padding:10px 12px;
-  border:1px solid var(--border);
-  border-radius:10px;
-  background:#fff;
-}
-
-input[type="date"]{
-  appearance:none;
-  -webkit-appearance:none;
-}
-
-button{
-  width:100%;
-  min-height:48px;
-  padding:12px;
-  border:0;
-  border-radius:10px;
-  background:var(--primary);
-  color:#fff;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.secondary{
-  margin-top:10px;
-  background:var(--green);
-}
-
-.light{
-  margin-top:10px;
-  background:#e5e7eb;
-  color:var(--text);
-}
-
-.row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:14px;
-  padding:12px 0;
-  border-bottom:1px solid #eee;
-}
-
-.row:last-child{border-bottom:0}
-
-.row span{color:var(--muted)}
-.row strong{text-align:right}
-
-.results{display:none}
-
-.profit-box{
-  margin-top:12px;
-  padding:4px 14px;
-  border-radius:12px;
-  background:var(--green-soft);
-  color:#166534;
-}
-
-.profit-box.negative{
-  background:#fee2e2;
-  color:var(--danger);
-}
-
-.message{
-  display:none;
-  margin-top:12px;
-  padding:12px;
-  border-radius:10px;
-  background:var(--green-soft);
-  color:#166534;
-  text-align:center;
-  font-weight:bold;
-}
-
-.date-grid{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-  gap:10px;
-}
-
-.date-grid > div{min-width:0}
-
-.empty-state{
-  margin-top:16px;
-  padding:16px;
-  border-radius:12px;
-  background:#f9fafb;
-  color:var(--muted);
-  text-align:center;
-}
-
-.calendar-panel{
-  display:none;
-  margin-top:16px;
-  padding-top:16px;
-  padding-bottom:96px;
-  border-top:1px solid #e5e7eb;
-}
-
-.calendar-panel.open{display:block}
-
-.calendar-header{
-  display:grid;
-  grid-template-columns:44px minmax(0,1fr) 44px;
-  align-items:center;
-  gap:8px;
-  margin-bottom:12px;
-}
-
-.calendar-header button{
-  width:44px;
-  min-width:44px;
-  min-height:42px;
-  padding:0;
-  background:#e5e7eb;
-  color:var(--text);
-  font-size:24px;
-}
-
-.calendar-title{
-  text-align:center;
-  font-weight:bold;
-  text-transform:capitalize;
-}
-
-.weekdays,.calendar-grid{
-  display:grid;
-  grid-template-columns:repeat(7,minmax(0,1fr));
-  gap:5px;
-}
-
-.weekdays div{
-  padding:5px 0;
-  text-align:center;
-  color:var(--muted);
-  font-size:11px;
-  font-weight:bold;
-}
-
-.calendar-day{
-  width:100%;
-  min-width:0;
-  min-height:42px;
-  padding:4px 1px;
-  border:1px solid #e5e7eb;
-  border-radius:9px;
-  background:#fff;
-  color:var(--text);
-  font-size:13px;
-}
-
-.calendar-day.empty{
-  visibility:hidden;
-}
-
-.calendar-day.today{
-  outline:2px solid #f59e0b;
-}
-
-.calendar-day.saved{
-  background:var(--green-soft);
-  border-color:var(--green);
-  color:#166534;
-  font-weight:bold;
-}
-
-.calendar-day.selected{
-  background:var(--primary);
-  border-color:var(--primary);
-  color:#fff;
-}
-
-.day-summary{
-  display:none;
-  margin-top:14px;
-  margin-bottom:78px;
-  padding:14px;
-  border-radius:12px;
-  background:#f9fafb;
-  border:1px solid #e5e7eb;
-}
-
-.day-summary h3{
-  margin:0 0 8px;
-  font-size:17px;
-}
-
-.fuel-summary{
-  display:none;
-  align-items:center;
-  justify-content:space-between;
-  gap:14px;
-  padding:14px;
-  border:1px solid #e5e7eb;
-  border-radius:12px;
-  background:#f9fafb;
-}
-
-.fuel-summary strong{
-  display:block;
-  margin-bottom:5px;
-}
-
-.fuel-summary small{
-  color:var(--muted);
-  line-height:1.5;
-}
-
-.edit-button{
-  width:44px;
-  min-width:44px;
-  height:44px;
-  min-height:44px;
-  padding:0;
-  border-radius:50%;
-  background:#e5e7eb;
-  color:var(--text);
-  font-size:20px;
-}
-
-.bottom{
-  position:fixed;
-  left:50%;
-  bottom:0;
-  z-index:20;
-  width:100%;
-  max-width:560px;
-  transform:translateX(-50%);
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  padding:7px 10px calc(7px + env(safe-area-inset-bottom));
-  background:rgba(255,255,255,.97);
-  border-top:1px solid #ddd;
-}
-
-.bottom button{
-  min-width:0;
-  min-height:54px;
-  padding:6px 2px;
-  border-radius:10px;
-  background:#fff;
-  color:#666;
-  font-size:12px;
-}
-
-.bottom button.active{
-  background:#f3f4f6;
-  color:#111;
-}
-
-.bottom b{
-  display:block;
-  margin-bottom:3px;
-  font-size:20px;
-}
-
-.note{
-  margin-top:12px;
-  color:var(--muted);
-  font-size:13px;
-  line-height:1.45;
-}
-
-@media(max-width:380px){
-  .date-grid{grid-template-columns:1fr}
-}
+:root{--bg:#12161B;--panel:#1B2129;--panel-line:rgba(255,255,255,.08);--amber:#F5A623;--amber-dim:rgba(245,166,35,.15);--green:#3DDC97;--green-dim:rgba(61,220,151,.12);--red:#FF6B6B;--red-dim:rgba(255,107,107,.12);--text:#EDEFF2;--muted:#8B95A1;--faint:#545E6B}
+*{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh;display:flex;justify-content:center;padding:28px 16px 60px}main{width:100%;max-width:420px}
+header{margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.kicker{color:var(--amber);font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.02em;margin-bottom:6px}h1{font-size:26px;font-weight:700;margin:0;line-height:1.2}.subtitle{color:var(--muted);font-size:14px;margin-top:8px;line-height:1.5}
+#btn-config{flex-shrink:0;width:38px;height:38px;border-radius:9px;background:var(--panel);border:1px solid var(--panel-line);color:var(--muted);font-size:17px;display:flex;align-items:center;justify-content:center;padding:0;margin-top:2px}
+#btn-config:active{color:var(--amber);border-color:var(--amber)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(8,10,13,.7);z-index:10;align-items:center;justify-content:center;padding:16px}.modal-overlay.show{display:flex}.modal-panel{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--panel-line);border-radius:14px;padding:22px 20px}.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.modal-header h2{font-size:18px;margin:0}.modal-close{background:transparent;border:none;color:var(--muted);font-size:20px;padding:0;width:28px;height:28px}
+.tabs{display:flex;background:var(--panel);border:1px solid var(--panel-line);border-radius:12px;padding:4px;margin-bottom:16px}.tab-btn{flex:1;background:transparent;border:none;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;padding:11px 2px;border-radius:9px;cursor:pointer}.tab-btn.active{background:var(--amber);color:#1A1204}
+.view{display:none}.view.active{display:block}.panel{background:var(--panel);border:1px solid var(--panel-line);border-radius:14px;padding:22px 20px}.panel+.panel{margin-top:16px}.field{position:relative}.field+.field{margin-top:22px}.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}.field .input-row{display:flex;align-items:baseline;border-bottom:1px solid var(--panel-line);padding-bottom:8px;transition:border-color .15s ease}.field .input-row:focus-within{border-bottom-color:var(--amber)}.field .unit{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--faint);padding-right:10px;white-space:nowrap}.field input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:500}.field input[type=date]{font-size:16px}.field input::placeholder{color:var(--faint)}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}input[type=number]{-moz-appearance:textfield}
+.field select{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:500;padding-bottom:2px}.field select option{background:var(--panel);color:var(--text)}.label-tag{color:var(--faint);font-family:'JetBrains Mono',monospace;font-weight:400}
+.actions{display:flex;gap:10px;margin-top:20px}button{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;border:none;border-radius:10px;padding:15px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#btn-calcular,#btn-gerar-rel{flex:1;background:var(--amber);color:#1A1204;transition:transform .08s ease,filter .15s ease}#btn-calcular:active,#btn-gerar-rel:active{transform:scale(.98);filter:brightness(.95)}
+#btn-limpar{background:transparent;color:var(--muted);border:1px solid var(--panel-line);padding:15px 18px}#btn-limpar:active{filter:brightness(1.3)}
+#btn-salvar{width:100%;margin-top:12px;background:transparent;color:var(--green);border:1px solid rgba(61,220,151,.35)}#btn-salvar:active{background:var(--green-dim)}
+.error{color:var(--red);font-size:13px;margin-top:14px;display:none}.error.show{display:block}.toast{color:var(--green);font-size:13px;margin-top:12px;display:none;text-align:center}.toast.show{display:block}
+#resultado{margin-top:16px;display:none}#resultado.show{display:block;animation:rise .35s ease}@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.result-hero{text-align:center;padding:6px 0 22px;border-bottom:1px solid var(--panel-line);margin-bottom:18px}.result-hero .label{color:var(--muted);font-size:13px;margin-bottom:10px}.result-hero .value{font-family:'JetBrains Mono',monospace;font-size:44px;font-weight:700;letter-spacing:-.01em}.value.positive{color:var(--green)}.value.negative{color:var(--red)}.result-hero .margem{font-family:'JetBrains Mono',monospace;font-size:13px;margin-top:8px;display:inline-block;padding:3px 10px;border-radius:20px}.margem.positive{background:var(--green-dim);color:var(--green)}.margem.negative{background:var(--red-dim);color:var(--red)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.tile{background:rgba(255,255,255,.02);border:1px solid var(--panel-line);border-radius:10px;padding:14px 14px 12px}.tile .label{color:var(--muted);font-size:12px;margin-bottom:8px;line-height:1.3}.tile .value{font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:700}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.cal-nav button{background:transparent;border:1px solid var(--panel-line);color:var(--text);width:38px;height:38px;border-radius:9px;font-size:16px;padding:0}.cal-nav button:active{background:rgba(255,255,255,.06)}.cal-title{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:500;text-transform:capitalize}.cal-weekdays,.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.cal-weekdays{margin-bottom:8px}.cal-weekdays span{text-align:center;font-size:11px;color:var(--faint);font-family:'JetBrains Mono',monospace}.cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);background:transparent;border:1px solid transparent;cursor:default}.cal-day.empty{visibility:hidden}.cal-day.has-data{color:var(--text);cursor:pointer;border-color:var(--panel-line)}.cal-day.has-data:active{background:rgba(255,255,255,.05)}.cal-day .dot{width:4px;height:4px;border-radius:50%;background:var(--amber);visibility:hidden}.cal-day.has-data .dot{visibility:visible}.cal-day.today{border-color:var(--amber);color:var(--amber)}.cal-day.selected{background:var(--amber);color:#1A1204;border-color:var(--amber)}.cal-day.selected .dot{background:#1A1204}.cal-empty-msg{color:var(--muted);font-size:13px;text-align:center;padding:10px 4px 2px;line-height:1.6}.detail-date{font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:13px;margin-bottom:4px}
+.download-btn{width:100%;margin-top:12px;background:transparent;color:var(--green);border:1px solid rgba(61,220,151,.35)}.download-btn:active{background:var(--green-dim)}
+footer{text-align:center;color:var(--faint);font-size:12px;margin-top:24px;line-height:1.6}
+@media(max-width:360px){body{padding-left:12px;padding-right:12px}.panel{padding-left:16px;padding-right:16px}.result-hero .value{font-size:38px}.tile .value{font-size:17px}}
 </style>
 </head>
-
 <body>
-<div class="container">
-  <h1>Controle do Motorista</h1>
-  <p class="subtitle">Faturamento, combustível e lucro.</p>
+<main>
+<header>
+<div><div class="kicker">// painel de bordo</div><h1>Fechamento do dia</h1><p class="subtitle">Lance o que abasteceu, rodou e faturou. O painel calcula seu consumo e seu lucro real.</p></div>
+<button id="btn-config" onclick="abrirConfig()" aria-label="Configurações de combustível">⚙</button>
+</header>
 
-  <section id="novoScreen" class="screen active">
-    <div class="card">
-      <h2>Novo lançamento</h2>
-
-      <label for="litersUsed">Litros consumidos</label>
-      <input id="litersUsed" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ex.: 25,5">
-
-      <label for="distance">Quilômetros rodados</label>
-      <input id="distance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ex.: 250">
-
-      <label for="earnings">Faturamento</label>
-      <input id="earnings" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ex.: 300,00">
-
-      <label for="workedHours">Horas trabalhadas</label>
-      <input id="workedHours" type="text" inputmode="numeric" maxlength="5" placeholder="Ex.: 08:30" oninput="applyTimeMask(this)">
-
-      <button type="button" onclick="calculate()">Calcular</button>
-      <button class="light" type="button" onclick="clearForm()">Limpar</button>
-    </div>
-
-    <div id="results" class="card results">
-      <h2>Resultado</h2>
-
-      <div class="row">
-        <span>Faturamento</span>
-        <strong id="resultEarnings">R$ 0,00</strong>
-      </div>
-
-      <div class="row">
-        <span>Gasto combustível</span>
-        <strong id="resultFuel">R$ 0,00</strong>
-      </div>
-
-      <div class="row">
-        <span>Quilômetros</span>
-        <strong id="resultKm">0 km</strong>
-      </div>
-
-      <div class="row">
-        <span>Consumo médio</span>
-        <strong id="resultKmPerLiter">0,0 km/L</strong>
-      </div>
-
-      <div id="profitBox" class="profit-box">
-        <div class="row">
-          <span>Lucro</span>
-          <strong id="resultProfit">R$ 0,00</strong>
-        </div>
-      </div>
-
-      <label for="recordDate">Data</label>
-      <input id="recordDate" type="date">
-
-      <button class="secondary" type="button" onclick="saveDay()">Salvar o dia</button>
-      <div id="saveMessage" class="message">Dia salvo com sucesso!</div>
-
-      <p class="note">O lucro desconta somente o combustível.</p>
-    </div>
-  </section>
-
-  <section id="historicoScreen" class="screen">
-    <div class="card">
-      <h2>Histórico</h2>
-
-      <div class="date-grid">
-        <div>
-          <label for="startDate">Data inicial</label>
-          <input id="startDate" type="date" onchange="updatePeriodSummary()">
-        </div>
-
-        <div>
-          <label for="endDate">Data final</label>
-          <input id="endDate" type="date" onchange="updatePeriodSummary()">
-        </div>
-      </div>
-
-      <button type="button" style="margin-top:14px" onclick="updatePeriodSummary()">
-        Atualizar período
-      </button>
-
-      <div id="periodSummary" style="margin-top:18px">
-        <div class="row">
-          <span>Dias trabalhados</span>
-          <strong id="periodDays">0</strong>
-        </div>
-        <div class="row">
-          <span>Faturamento</span>
-          <strong id="periodEarnings">R$ 0,00</strong>
-        </div>
-        <div class="row">
-          <span>Litros consumidos</span>
-          <strong id="periodLiters">0,0 L</strong>
-        </div>
-        <div class="row">
-          <span>Gasto combustível</span>
-          <strong id="periodFuel">R$ 0,00</strong>
-        </div>
-        <div class="row">
-          <span>Lucro</span>
-          <strong id="periodProfit">R$ 0,00</strong>
-        </div>
-        <div class="row">
-          <span>Quilômetros</span>
-          <strong id="periodKm">0 km</strong>
-        </div>
-        <div class="row">
-          <span>Horas trabalhadas</span>
-          <strong id="periodHours">0 h</strong>
-        </div>
-      </div>
-
-      <button id="calendarToggle" class="secondary" type="button" onclick="toggleCalendar()">
-        📅 Ver calendário
-      </button>
-
-      <div id="calendarPanel" class="calendar-panel">
-        <div class="calendar-header">
-          <button type="button" onclick="changeMonth(-1)">‹</button>
-          <div id="calendarTitle" class="calendar-title"></div>
-          <button type="button" onclick="changeMonth(1)">›</button>
-        </div>
-
-        <div class="weekdays">
-          <div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div>
-          <div>QUI</div><div>SEX</div><div>SÁB</div>
-        </div>
-
-        <div id="calendarGrid" class="calendar-grid"></div>
-
-        <div id="daySummary" class="day-summary">
-          <h3 id="daySummaryTitle"></h3>
-
-          <div class="row">
-            <span>Faturamento</span>
-            <strong id="dayEarnings">R$ 0,00</strong>
-          </div>
-          <div class="row">
-            <span>Litros consumidos</span>
-            <strong id="dayLiters">0,0 L</strong>
-          </div>
-          <div class="row">
-            <span>Gasto combustível</span>
-            <strong id="dayFuel">R$ 0,00</strong>
-          </div>
-          <div class="row">
-            <span>Lucro</span>
-            <strong id="dayProfit">R$ 0,00</strong>
-          </div>
-          <div class="row">
-            <span>Quilômetros</span>
-            <strong id="dayKm">0 km</strong>
-          </div>
-
-          <div class="row">
-            <span>Consumo médio</span>
-            <strong id="dayKmPerLiter">0,0 km/L</strong>
-          </div>
-          <div class="row">
-            <span>Horas trabalhadas</span>
-            <strong id="dayHours">0 h</strong>
-          </div>
-
-          <button id="editDayButton" class="light" type="button" onclick="openDayEdit()">
-            Editar informações
-          </button>
-
-          <div id="dayEditForm" style="display:none;margin-top:14px;">
-            <label for="editDistance">Quilômetros</label>
-            <input id="editDistance" type="number" inputmode="decimal" min="0" step="0.1">
-
-            <label for="editEarnings">Faturamento</label>
-            <input id="editEarnings" type="number" inputmode="decimal" min="0" step="0.01">
-
-            <label for="editWorkedHours">Horas trabalhadas</label>
-            <input id="editWorkedHours" type="text" inputmode="numeric" maxlength="5" placeholder="Ex.: 08:30" oninput="applyTimeMask(this)">
-
-            <button class="secondary" type="button" onclick="saveDayEdit()">
-              Salvar alterações
-            </button>
-
-            <button class="light" type="button" onclick="cancelDayEdit()">
-              Cancelar
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div id="noRecords" class="empty-state" style="display:none">
-        Nenhum lançamento encontrado nesse período.
-      </div>
-    </div>
-  </section>
-
-  <section id="ajustesScreen" class="screen">
-    <div class="card">
-      <h2>Combustível</h2>
-
-      <div id="fuelForm">
-        <label for="fuelType">Tipo</label>
-        <select id="fuelType">
-          <option value="Gasolina">Gasolina</option>
-          <option value="Etanol">Álcool / Etanol</option>
-          <option value="GNV">Gás / GNV</option>
-        </select>
-
-        <label for="fuelPrice">Preço por litro ou m³</label>
-        <input id="fuelPrice" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ex.: 6,19">
-
-        <label for="consumption">Consumo do veículo</label>
-        <input id="consumption" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ex.: 10 km/L">
-
-        <button class="secondary" type="button" onclick="saveFuel()">Salvar combustível</button>
-      </div>
-
-      <div id="fuelSummary" class="fuel-summary">
-        <div>
-          <strong id="fuelSummaryTitle"></strong>
-          <small id="fuelSummaryDetails"></small>
-        </div>
-
-        <button class="edit-button" type="button" onclick="editFuel()">✏️</button>
-      </div>
-    </div>
-  </section>
+<div class="tabs">
+<button class="tab-btn active" id="tab-btn-calc" onclick="mudarAba('calc')">Calculadora</button>
+<button class="tab-btn" id="tab-btn-hist" onclick="mudarAba('hist')">Histórico</button>
+<button class="tab-btn" id="tab-btn-rel" onclick="mudarAba('rel')">Relatório</button>
 </div>
 
-<nav class="bottom">
-  <button id="navNovo" class="active" onclick="openScreen('novo',this)">
-    <b>＋</b>Novo
-  </button>
+<section class="view active" id="view-calc">
+<section class="panel">
+<div class="field"><label for="data">Dia</label><div class="input-row"><input type="date" id="data"></div></div>
+<div class="field"><label for="litros">Litros abastecidos</label><div class="input-row"><span class="unit">L</span><input type="number" id="litros" inputmode="decimal" step="0.01" min="0" placeholder="0,00"></div></div>
+<div class="field"><label for="preco">Preço do litro <span class="label-tag" id="tipo-combustivel-label"></span></label><div class="input-row"><span class="unit">R$</span><input type="number" id="preco" inputmode="decimal" step="0.01" min="0" placeholder="0,00"></div></div>
+<div class="field"><label for="km">Km rodado</label><div class="input-row"><span class="unit">km</span><input type="number" id="km" inputmode="decimal" step="0.1" min="0" placeholder="0,0"></div></div>
+<div class="field"><label for="faturamento">Faturamento total</label><div class="input-row"><span class="unit">R$</span><input type="number" id="faturamento" inputmode="decimal" step="0.01" min="0" placeholder="0,00"></div></div>
+<p class="error" id="erro">Preencha km rodado e faturamento para calcular.</p>
+<div class="actions"><button id="btn-calcular" onclick="calcular()">Calcular</button><button id="btn-limpar" onclick="limpar()">Limpar</button></div>
+</section>
 
-  <button id="navHistorico" onclick="openScreen('historico',this)">
-    <b>📊</b>Histórico
-  </button>
+<section class="panel" id="resultado">
+<div class="result-hero"><div class="label">Lucro líquido do dia</div><div class="value" id="lucro-valor">R$ 0,00</div><span class="margem" id="margem-tag">0% de margem</span></div>
+<div class="grid">
+<div class="tile"><div class="label">Consumo médio</div><div class="value" id="consumo-valor">0,0 km/L</div></div>
+<div class="tile"><div class="label">Gasto com combustível</div><div class="value" id="gasto-valor">R$ 0,00</div></div>
+<div class="tile"><div class="label">Faturamento total</div><div class="value" id="faturamento-valor">R$ 0,00</div></div>
+<div class="tile"><div class="label">Litros consumidos</div><div class="value" id="litros-valor">0,0 L</div></div>
+</div>
+<button id="btn-salvar" onclick="salvarDia()">Salvar dia</button><p class="toast" id="toast">Dia salvo no histórico.</p>
+</section>
+</section>
 
-  <button id="navAjustes" onclick="openScreen('ajustes',this)">
-    <b>⚙️</b>Ajustes
-  </button>
-</nav>
+<section class="view" id="view-hist">
+<section class="panel">
+<div class="cal-nav"><button onclick="mudarMes(-1)">‹</button><span class="cal-title" id="cal-title">—</span><button onclick="mudarMes(1)">›</button></div>
+<div class="cal-weekdays"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
+<div class="cal-days" id="cal-days"></div>
+</section>
+<section class="panel" id="detalhe-dia" style="display:none;">
+<div class="detail-date" id="detalhe-data">—</div>
+<div class="result-hero" style="padding-top:0;"><div class="label">Lucro líquido</div><div class="value" id="detalhe-lucro">R$ 0,00</div><span class="margem" id="detalhe-margem">0% de margem</span></div>
+<div class="grid">
+<div class="tile"><div class="label">Consumo médio</div><div class="value" id="detalhe-consumo">0,0 km/L</div></div>
+<div class="tile"><div class="label">Gasto com combustível</div><div class="value" id="detalhe-gasto">R$ 0,00</div></div>
+<div class="tile"><div class="label">Faturamento total</div><div class="value" id="detalhe-faturamento">R$ 0,00</div></div>
+<div class="tile"><div class="label">Litros consumidos</div><div class="value" id="detalhe-litros">0,0 L</div></div>
+</div>
+</section>
+<p class="cal-empty-msg" id="cal-empty-msg" style="display:none;">Nenhum dia salvo ainda. Calcule um dia na aba Calculadora e toque em "Salvar dia".</p>
+</section>
+
+<section class="view" id="view-rel">
+<section class="panel">
+<div class="field"><label for="rel-inicio">Data inicial</label><div class="input-row"><input type="date" id="rel-inicio"></div></div>
+<div class="field"><label for="rel-fim">Data final</label><div class="input-row"><input type="date" id="rel-fim"></div></div>
+<p class="error" id="rel-erro">Escolha uma data inicial anterior ou igual à data final.</p>
+<div class="actions"><button id="btn-gerar-rel" onclick="gerarRelatorio()" style="width:100%;">Gerar relatório</button></div>
+</section>
+<section class="panel" id="rel-resultado" style="display:none;">
+<div class="detail-date" id="rel-periodo">—</div>
+<div class="result-hero" style="padding-top:0;"><div class="label">Lucro líquido no período</div><div class="value" id="rel-lucro">R$ 0,00</div><span class="margem" id="rel-margem">0% de margem</span></div>
+<div class="grid">
+<div class="tile"><div class="label">Km rodado</div><div class="value" id="rel-km">0,0 km</div></div>
+<div class="tile"><div class="label">Faturamento total</div><div class="value" id="rel-faturamento">R$ 0,00</div></div>
+<div class="tile"><div class="label">Litros consumidos</div><div class="value" id="rel-litros">0,0 L</div></div>
+<div class="tile"><div class="label">Gasto com combustível</div><div class="value" id="rel-gasto">R$ 0,00</div></div>
+</div>
+<button class="download-btn" onclick="baixarRelatorioTodos()">📥 Baixar relatório de todos os dias</button>
+</section>
+<p class="cal-empty-msg" id="rel-sem-dados" style="display:none;">Nenhum dia salvo nesse período.</p>
+</section>
+
+<footer>Os cálculos consideram apenas combustível como custo.<br>Manutenção, aplicativo e outros gastos entram por sua conta.</footer>
+</main>
+
+<div class="modal-overlay" id="modal-overlay" onclick="fecharConfigSeClicarFora(event)">
+<div class="modal-panel">
+<div class="modal-header"><h2>Combustível padrão</h2><button class="modal-close" onclick="fecharConfig()" aria-label="Fechar">×</button></div>
+<div class="field"><label for="config-tipo">Tipo de combustível</label><div class="input-row"><select id="config-tipo"><option value="Gasolina">Gasolina</option><option value="Etanol">Etanol</option><option value="Diesel">Diesel</option><option value="GNV">GNV</option><option value="Flex">Flex</option></select></div></div>
+<div class="field"><label for="config-preco">Preço do litro</label><div class="input-row"><span class="unit">R$</span><input type="number" id="config-preco" inputmode="decimal" step="0.01" min="0" placeholder="0,00"></div></div>
+<div class="actions"><button id="btn-salvar-config" onclick="salvarConfig()" style="flex:1;background:var(--amber);color:#1A1204;">Salvar</button></div>
+</div></div>
 
 <script>
-const FUEL_KEY = "motoristaCombustivel";
-const DAYS_KEY = "motoristaDias";
+const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+let ultimoResultado=null,calAno,calMes,diaSelecionado=null;
 
-let currentResult = null;
-let calendarDate = new Date();
-let selectedDate = "";
+function hojeStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function primeiroDiaDoMesStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'}
+document.getElementById('data').value=hojeStr();document.getElementById('rel-inicio').value=primeiroDiaDoMesStr();document.getElementById('rel-fim').value=hojeStr();
 
-function money(value){
-  return Number(value || 0).toLocaleString("pt-BR",{
-    style:"currency",
-    currency:"BRL"
+function formatarMoeda(valor){const neg=valor<0,abs=Math.abs(Number(valor)||0),partes=abs.toFixed(2).split('.'),inteiro=parseInt(partes[0],10).toLocaleString('pt-BR');return(neg?'-R$ ':'R$ ')+inteiro+','+partes[1]}
+function numero(v){const n=Number(v);return Number.isFinite(n)?n:0}
+
+/* Compatibilidade: lê registros novos e também formatos das versões anteriores.
+   Não altera nem migra os dados já salvos. */
+function normalizarRegistro(d){
+  if(!d)return null;
+  const km=numero(d.km!==undefined?d.km:d.distance);
+  const litros=numero(d.litros!==undefined?d.litros:(d.quantityUsed!==undefined?d.quantityUsed:d.litersUsed));
+  const faturamento=numero(d.faturamento!==undefined?d.faturamento:d.earnings);
+  const gasto=numero(d.gastoCombustivel!==undefined?d.gastoCombustivel:d.fuelCost);
+  const lucro=numero(d.lucroLiquido!==undefined?d.lucroLiquido:d.profit);
+  const consumo=numero(d.consumo!==undefined?d.consumo:(d.kmPerLiter!==undefined?d.kmPerLiter:(litros>0?km/litros:0)));
+  let minutos=0;
+  if(d.workedMinutes!==undefined)minutos=numero(d.workedMinutes);
+  else if(d.workedHours!==undefined)minutos=numero(d.workedHours)*60;
+  return {...d,km,litros,faturamento,gastoCombustivel:gasto,lucroLiquido:lucro,consumo,workedMinutes:minutos};
+}
+
+function lerRegistro(dataStr){
+  try{return normalizarRegistro(JSON.parse(localStorage.getItem('day:'+dataStr)))}
+  catch(e){return null}
+}
+function todasAsDatas(){
+  try{return Object.keys(localStorage).filter(k=>k.startsWith('day:')).map(k=>k.slice(4)).sort()}
+  catch(e){return []}
+}
+
+function mudarAba(aba){
+  ['calc','hist','rel'].forEach(x=>{document.getElementById('view-'+x).classList.toggle('active',aba===x);document.getElementById('tab-btn-'+x).classList.toggle('active',aba===x)});
+  if(aba==='hist')renderCalendario();
+}
+function calcular(){
+  const litros=numero(document.getElementById('litros').value),preco=numero(document.getElementById('preco').value),km=numero(document.getElementById('km').value),faturamento=numero(document.getElementById('faturamento').value),erro=document.getElementById('erro'),resultado=document.getElementById('resultado');
+  if(km<=0||faturamento<0||document.getElementById('faturamento').value===''){erro.classList.add('show');resultado.classList.remove('show');ultimoResultado=null;return}
+  erro.classList.remove('show');
+  const gastoCombustivel=litros*preco,lucroLiquido=faturamento-gastoCombustivel,consumo=litros>0?km/litros:0,margem=faturamento>0?lucroLiquido/faturamento*100:0,positivo=lucroLiquido>=0;
+  const lucro=document.getElementById('lucro-valor'),tag=document.getElementById('margem-tag');
+  lucro.textContent=formatarMoeda(lucroLiquido);lucro.className='value '+(positivo?'positive':'negative');
+  tag.textContent=margem.toFixed(1).replace('.',',')+'% de margem';tag.className='margem '+(positivo?'positive':'negative');
+  document.getElementById('consumo-valor').textContent=consumo.toFixed(1).replace('.',',')+' km/L';
+  document.getElementById('gasto-valor').textContent=formatarMoeda(gastoCombustivel);
+  document.getElementById('faturamento-valor').textContent=formatarMoeda(faturamento);
+  document.getElementById('litros-valor').textContent=litros.toFixed(1).replace('.',',')+' L';
+  resultado.classList.add('show');document.getElementById('toast').classList.remove('show');
+  ultimoResultado={litros,preco,km,faturamento,gastoCombustivel,lucroLiquido,consumo,margem};
+}
+function limpar(){['litros','preco','km','faturamento'].forEach(id=>document.getElementById(id).value='');document.getElementById('data').value=hojeStr();document.getElementById('resultado').classList.remove('show');document.getElementById('erro').classList.remove('show');document.getElementById('toast').classList.remove('show');ultimoResultado=null;document.getElementById('litros').focus()}
+function salvarDia(){
+  if(!ultimoResultado)return;
+  const dataStr=document.getElementById('data').value||hojeStr(),toast=document.getElementById('toast');
+  try{localStorage.setItem('day:'+dataStr,JSON.stringify(ultimoResultado));toast.textContent='Dia salvo no histórico.';toast.classList.add('show')}
+  catch(e){toast.textContent='Não foi possível salvar. Tente de novo.';toast.classList.add('show')}
+}
+function iniciarCalendario(){const hoje=new Date();calAno=hoje.getFullYear();calMes=hoje.getMonth()}
+function mudarMes(delta){calMes+=delta;if(calMes<0){calMes=11;calAno--}if(calMes>11){calMes=0;calAno++}diaSelecionado=null;document.getElementById('detalhe-dia').style.display='none';renderCalendario()}
+function renderCalendario(){
+  document.getElementById('cal-title').textContent=MESES[calMes]+' de '+calAno;
+  const datas=new Set(todasAsDatas()),container=document.getElementById('cal-days');container.innerHTML='';
+  document.getElementById('cal-empty-msg').style.display=datas.size===0?'block':'none';
+  const primeiro=new Date(calAno,calMes,1).getDay(),total=new Date(calAno,calMes+1,0).getDate(),hoje=hojeStr();
+  for(let i=0;i<primeiro;i++){const e=document.createElement('div');e.className='cal-day empty';container.appendChild(e)}
+  for(let dia=1;dia<=total;dia++){
+    const ds=calAno+'-'+String(calMes+1).padStart(2,'0')+'-'+String(dia).padStart(2,'0'),c=document.createElement('div');c.className='cal-day';
+    if(datas.has(ds))c.classList.add('has-data');if(ds===hoje)c.classList.add('today');if(ds===diaSelecionado)c.classList.add('selected');
+    const n=document.createElement('span');n.textContent=dia;const dot=document.createElement('span');dot.className='dot';c.append(n,dot);
+    if(datas.has(ds))c.onclick=()=>selecionarDia(ds);container.appendChild(c);
+  }
+}
+function selecionarDia(dataStr){
+  diaSelecionado=dataStr;renderCalendario();const d=lerRegistro(dataStr);if(!d)return;
+  const [ano,mes,dia]=dataStr.split('-'),positivo=d.lucroLiquido>=0;
+  document.getElementById('detalhe-data').textContent=dia+'/'+mes+'/'+ano;
+  const lucro=document.getElementById('detalhe-lucro');lucro.textContent=formatarMoeda(d.lucroLiquido);lucro.className='value '+(positivo?'positive':'negative');
+  const margem=document.getElementById('detalhe-margem');const m=d.faturamento>0?d.lucroLiquido/d.faturamento*100:0;margem.textContent=m.toFixed(1).replace('.',',')+'% de margem';margem.className='margem '+(positivo?'positive':'negative');
+  document.getElementById('detalhe-consumo').textContent=d.consumo.toFixed(1).replace('.',',')+' km/L';
+  document.getElementById('detalhe-gasto').textContent=formatarMoeda(d.gastoCombustivel);
+  document.getElementById('detalhe-faturamento').textContent=formatarMoeda(d.faturamento);
+  document.getElementById('detalhe-litros').textContent=d.litros.toFixed(1).replace('.',',')+' L';
+  document.getElementById('detalhe-dia').style.display='block';
+}
+function atualizarLabelCombustivel(tipo){document.getElementById('tipo-combustivel-label').textContent=tipo?'· '+tipo:''}
+function carregarConfig(){
+  try{const cfg=JSON.parse(localStorage.getItem('settings:combustivel'));if(!cfg)return;if(cfg.tipo){document.getElementById('config-tipo').value=cfg.tipo;atualizarLabelCombustivel(cfg.tipo)}if(cfg.preco!==undefined){document.getElementById('config-preco').value=cfg.preco;if(!document.getElementById('preco').value)document.getElementById('preco').value=cfg.preco}}
+  catch(e){}
+}
+function abrirConfig(){document.getElementById('modal-overlay').classList.add('show')}function fecharConfig(){document.getElementById('modal-overlay').classList.remove('show')}function fecharConfigSeClicarFora(e){if(e.target.id==='modal-overlay')fecharConfig()}
+function salvarConfig(){const tipo=document.getElementById('config-tipo').value,preco=numero(document.getElementById('config-preco').value),b=document.getElementById('btn-salvar-config'),old=b.textContent;try{localStorage.setItem('settings:combustivel',JSON.stringify({tipo,preco}));document.getElementById('preco').value=preco||'';atualizarLabelCombustivel(tipo);b.textContent='Salvo!';setTimeout(()=>{b.textContent=old;fecharConfig()},600)}catch(e){b.textContent='Erro ao salvar';setTimeout(()=>b.textContent=old,1200)}}
+function formatarDataBR(s){const[a,m,d]=s.split('-');return d+'/'+m+'/'+a}
+
+function gerarRelatorio(){
+  const inicio=document.getElementById('rel-inicio').value,fim=document.getElementById('rel-fim').value,erro=document.getElementById('rel-erro'),res=document.getElementById('rel-resultado'),sem=document.getElementById('rel-sem-dados');
+  if(!inicio||!fim||inicio>fim){erro.classList.add('show');res.style.display='none';sem.style.display='none';return}
+  erro.classList.remove('show');
+  const datas=todasAsDatas().filter(d=>d>=inicio&&d<=fim),regs=datas.map(lerRegistro).filter(Boolean);
+  if(!regs.length){res.style.display='none';sem.style.display='block';return}
+  sem.style.display='none';
+  const t=regs.reduce((a,d)=>{a.km+=d.km;a.faturamento+=d.faturamento;a.litros+=d.litros;a.gasto+=d.gastoCombustivel;a.lucro+=d.lucroLiquido;return a},{km:0,faturamento:0,litros:0,gasto:0,lucro:0}),m=t.faturamento>0?t.lucro/t.faturamento*100:0,pos=t.lucro>=0;
+  document.getElementById('rel-periodo').textContent=formatarDataBR(inicio)+' a '+formatarDataBR(fim)+' · '+datas.length+(datas.length===1?' dia salvo':' dias salvos');
+  const le=document.getElementById('rel-lucro');le.textContent=formatarMoeda(t.lucro);le.className='value '+(pos?'positive':'negative');
+  const me=document.getElementById('rel-margem');me.textContent=m.toFixed(1).replace('.',',')+'% de margem';me.className='margem '+(pos?'positive':'negative');
+  document.getElementById('rel-km').textContent=t.km.toFixed(1).replace('.',',')+' km';document.getElementById('rel-faturamento').textContent=formatarMoeda(t.faturamento);document.getElementById('rel-litros').textContent=t.litros.toFixed(1).replace('.',',')+' L';document.getElementById('rel-gasto').textContent=formatarMoeda(t.gasto);
+}
+
+function csvValor(v){return '"'+String(v).replace(/"/g,'""')+'"'}
+function baixarRelatorioTodos(){
+  const datas=todasAsDatas(),rows=[['Data','Quilômetros','Litros','Km/L','Faturamento','Gasto combustível','Lucro','Horas trabalhadas']];
+  datas.forEach(ds=>{
+    const d=lerRegistro(ds);if(!d)return;
+    const horas=d.workedMinutes?Math.floor(d.workedMinutes/60)+':'+String(Math.round(d.workedMinutes%60)).padStart(2,'0'):'';
+    rows.push([formatarDataBR(ds),d.km.toFixed(1).replace('.',','),d.litros.toFixed(2).replace('.',','),d.consumo?d.consumo.toFixed(2).replace('.',','):'',d.faturamento.toFixed(2).replace('.',','),d.gastoCombustivel.toFixed(2).replace('.',','),d.lucroLiquido.toFixed(2).replace('.',','),horas])
   });
+  if(rows.length===1){alert('Não há nenhum dia salvo para gerar o relatório.');return}
+  const csv='\uFEFF'+rows.map(r=>r.map(csvValor).join(';')).join('\r\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='relatorio_motorista_'+hojeStr()+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
 
-function decimal(value,digits=1){
-  return Number(value || 0).toLocaleString("pt-BR",{
-    minimumFractionDigits:digits,
-    maximumFractionDigits:digits
-  });
-}
-
-function numberValue(id){
-  return Number(document.getElementById(id).value.replace(",","."));
-}
-
-function applyTimeMask(input){
-  let digits=input.value.replace(/\D/g,"").slice(0,4);
-
-  if(digits.length===0){
-    input.value="";
-    return;
-  }
-
-  if(digits.length<=2){
-    input.value=digits;
-    return;
-  }
-
-  input.value=`${digits.slice(0,-2)}:${digits.slice(-2)}`;
-}
-
-function timeTextToMinutes(value){
-  const text=String(value || "").trim();
-
-  if(!text) return 0;
-
-  const parts=text.split(":");
-
-  let hours=0;
-  let minutes=0;
-
-  if(parts.length===2){
-    hours=Number(parts[0]);
-    minutes=Number(parts[1]);
-  }else{
-    const digits=text.replace(/\D/g,"");
-
-    if(digits.length<=2){
-      minutes=Number(digits);
-    }else{
-      hours=Number(digits.slice(0,-2));
-      minutes=Number(digits.slice(-2));
-    }
-  }
-
-  if(
-    Number.isNaN(hours) ||
-    Number.isNaN(minutes) ||
-    hours<0 ||
-    minutes<0 ||
-    minutes>59
-  ){
-    return NaN;
-  }
-
-  return (hours*60)+minutes;
-}
-
-function minutesToTimeText(totalMinutes){
-  const minutes=Math.max(0,Math.round(Number(totalMinutes || 0)));
-  const hours=Math.floor(minutes/60);
-  const remaining=minutes%60;
-
-  return `${String(hours).padStart(2,"0")}:${String(remaining).padStart(2,"0")}`;
-}
-
-function localDateString(date=new Date()){
-  const year=date.getFullYear();
-  const month=String(date.getMonth()+1).padStart(2,"0");
-  const day=String(date.getDate()).padStart(2,"0");
-  return `${year}-${month}-${day}`;
-}
-
-function formatDate(dateString){
-  const [year,month,day]=dateString.split("-");
-  return `${day}/${month}/${year}`;
-}
-
-function openScreen(name,button){
-  document.querySelectorAll(".screen").forEach(screen=>{
-    screen.classList.remove("active");
-  });
-
-  document.getElementById(`${name}Screen`).classList.add("active");
-
-  document.querySelectorAll(".bottom button").forEach(btn=>{
-    btn.classList.remove("active");
-  });
-
-  button.classList.add("active");
-
-  if(name==="historico"){
-    updatePeriodSummary();
-    renderCalendar();
-  }
-}
-
-function getDays(){
-  try{
-    return JSON.parse(localStorage.getItem(DAYS_KEY)) || [];
-  }catch{
-    return [];
-  }
-}
-
-function saveDays(days){
-  localStorage.setItem(DAYS_KEY,JSON.stringify(days));
-}
-
-function aggregate(days){
-  return days.reduce((total,day)=>{
-    total.earnings += Number(day.earnings || 0);
-    total.fuelCost += Number(day.fuelCost || 0);
-    total.profit += Number(day.profit || 0);
-    total.distance += Number(day.distance || 0);
-    total.quantityUsed += Number(day.quantityUsed || 0);
-
-    if(day.workedMinutes !== undefined){
-      total.workedMinutes += Number(day.workedMinutes || 0);
-    }else{
-      total.workedMinutes += Math.round(Number(day.workedHours || 0) * 60);
-    }
-    return total;
-  },{
-    earnings:0,
-    fuelCost:0,
-    profit:0,
-    distance:0,
-    quantityUsed:0,
-    workedMinutes:0
-  });
-}
-
-function saveFuel(){
-  const data={
-    fuelType:document.getElementById("fuelType").value,
-    fuelPrice:numberValue("fuelPrice"),
-    consumption:numberValue("consumption")
-  };
-
-  if(!data.fuelPrice || data.fuelPrice<=0){
-    alert("Informe um preço válido.");
-    return;
-  }
-
-  if(!data.consumption || data.consumption<=0){
-    alert("Informe um consumo válido.");
-    return;
-  }
-
-  localStorage.setItem(FUEL_KEY,JSON.stringify(data));
-  showFuel(data);
-}
-
-function loadFuel(){
-  try{
-    const data=JSON.parse(localStorage.getItem(FUEL_KEY));
-    if(!data) return;
-
-    document.getElementById("fuelType").value=data.fuelType;
-    document.getElementById("fuelPrice").value=data.fuelPrice;
-    document.getElementById("consumption").value=data.consumption;
-
-    showFuel(data);
-  }catch{}
-}
-
-function showFuel(data){
-  const priceUnit=data.fuelType==="GNV" ? "m³" : "litro";
-  const consumptionUnit=data.fuelType==="GNV" ? "km/m³" : "km/L";
-
-  document.getElementById("fuelSummaryTitle").textContent=data.fuelType;
-  document.getElementById("fuelSummaryDetails").innerHTML=
-    `${money(data.fuelPrice)} por ${priceUnit}<br>`+
-    `${decimal(data.consumption)} ${consumptionUnit}`;
-
-  document.getElementById("fuelForm").style.display="none";
-  document.getElementById("fuelSummary").style.display="flex";
-}
-
-function editFuel(){
-  document.getElementById("fuelSummary").style.display="none";
-  document.getElementById("fuelForm").style.display="block";
-}
-
-
-function calculate(){
-  let fuel;
-
-  try{
-    fuel=JSON.parse(localStorage.getItem(FUEL_KEY));
-  }catch{}
-
-  if(!fuel){
-    alert("Cadastre o combustível na aba Ajustes.");
-    document.getElementById("navAjustes").click();
-    return;
-  }
-
-  const litersUsed=numberValue("litersUsed");
-  const distance=numberValue("distance");
-  const earnings=numberValue("earnings");
-  const workedMinutes=timeTextToMinutes(document.getElementById("workedHours").value);
-
-  if(!litersUsed || litersUsed<=0){
-    alert("Informe a quantidade de litros consumidos.");
-    return;
-  }
-
-  if(!distance || distance<=0){
-    alert("Informe os quilômetros rodados.");
-    return;
-  }
-
-  if(Number.isNaN(earnings) || earnings<0){
-    alert("Informe um faturamento válido.");
-    return;
-  }
-
-  if(Number.isNaN(workedMinutes)){
-    alert("Informe as horas no formato HH:MM. Exemplo: 08:30.");
-    return;
-  }
-
-  const fuelPrice=Number(fuel.fuelPrice);
-  const quantityUsed=litersUsed;
-  const fuelCost=quantityUsed*fuelPrice;
-  const profit=earnings-fuelCost;
-  const kmPerLiter=distance/quantityUsed;
-
-  currentResult={
-    fuelType:fuel.fuelType,
-    fuelPrice:Number(fuel.fuelPrice),
-    consumption:Number(fuel.consumption),
-    distance,
-    earnings,
-    workedMinutes,
-    quantityUsed,
-    fuelCost,
-    profit,
-    kmPerLiter
-  };
-
-  document.getElementById("resultEarnings").textContent=money(earnings);
-  document.getElementById("resultFuel").textContent=money(fuelCost);
-  document.getElementById("resultKm").textContent=`${decimal(distance)} km`;
-  document.getElementById("resultKmPerLiter").textContent=`${decimal(kmPerLiter)} km/L`;
-  document.getElementById("resultProfit").textContent=money(profit);
-  document.getElementById("profitBox").classList.toggle("negative",profit<0);
-
-  document.getElementById("saveMessage").style.display="none";
-  document.getElementById("results").style.display="block";
-  document.getElementById("results").scrollIntoView({
-    behavior:"smooth",
-    block:"start"
-  });
-}
-
-function saveDay(){
-  if(!currentResult){
-    alert("Faça o cálculo antes de salvar.");
-    return;
-  }
-
-  const date=document.getElementById("recordDate").value;
-
-  if(!date){
-    alert("Escolha a data.");
-    return;
-  }
-
-  const days=getDays();
-
-  days.push({
-    id:Date.now(),
-    date,
-    ...currentResult
-  });
-
-  days.sort((a,b)=>a.date.localeCompare(b.date));
-  saveDays(days);
-
-  const message=document.getElementById("saveMessage");
-  message.textContent="Dia salvo com sucesso!";
-  message.style.display="block";
-
-  document.getElementById("litersUsed").value="";
-  document.getElementById("distance").value="";
-  document.getElementById("earnings").value="";
-  document.getElementById("workedHours").value="";
-  currentResult=null;
-
-  updatePeriodSummary();
-  renderCalendar();
-
-  setTimeout(()=>{
-    document.getElementById("results").style.display="none";
-    message.style.display="none";
-    document.getElementById("recordDate").value=localDateString();
-    document.getElementById("distance").focus();
-  },1300);
-}
-
-function clearForm(){
-  document.getElementById("litersUsed").value="";
-  document.getElementById("distance").value="";
-  document.getElementById("earnings").value="";
-  document.getElementById("workedHours").value="";
-  document.getElementById("results").style.display="none";
-  document.getElementById("saveMessage").style.display="none";
-  currentResult=null;
-}
-
-function updatePeriodSummary(){
-  const start=document.getElementById("startDate").value;
-  const end=document.getElementById("endDate").value;
-
-  if(start && end && start>end){
-    alert("A data inicial não pode ser maior que a data final.");
-    return;
-  }
-
-  const filtered=getDays().filter(day=>{
-    if(start && day.date<start) return false;
-    if(end && day.date>end) return false;
-    return true;
-  });
-
-  const totals=aggregate(filtered);
-  const workedDays=new Set(filtered.map(day=>day.date)).size;
-
-  document.getElementById("periodDays").textContent=workedDays;
-  document.getElementById("periodEarnings").textContent=money(totals.earnings);
-  document.getElementById("periodLiters").textContent=`${decimal(totals.quantityUsed)} L`;
-  document.getElementById("periodFuel").textContent=money(totals.fuelCost);
-  document.getElementById("periodProfit").textContent=money(totals.profit);
-  document.getElementById("periodKm").textContent=`${decimal(totals.distance)} km`;
-  document.getElementById("periodHours").textContent=minutesToTimeText(totals.workedMinutes);
-
-  document.getElementById("noRecords").style.display=
-    filtered.length ? "none" : "block";
-}
-
-function toggleCalendar(){
-  const panel=document.getElementById("calendarPanel");
-  const button=document.getElementById("calendarToggle");
-  const opening=!panel.classList.contains("open");
-
-  panel.classList.toggle("open",opening);
-  button.textContent=opening ? "Fechar calendário" : "📅 Ver calendário";
-
-  if(opening){
-    renderCalendar();
-    panel.scrollIntoView({
-      behavior:"smooth",
-      block:"nearest"
-    });
-  }
-}
-
-function changeMonth(offset){
-  calendarDate=new Date(
-    calendarDate.getFullYear(),
-    calendarDate.getMonth()+offset,
-    1
-  );
-
-  selectedDate="";
-  document.getElementById("daySummary").style.display="none";
-  renderCalendar();
-}
-
-function renderCalendar(){
-  const year=calendarDate.getFullYear();
-  const month=calendarDate.getMonth();
-  const firstWeekday=new Date(year,month,1).getDay();
-  const totalDays=new Date(year,month+1,0).getDate();
-  const today=localDateString();
-
-  const savedDates=new Set(getDays().map(day=>day.date));
-
-  document.getElementById("calendarTitle").textContent=
-    calendarDate.toLocaleDateString("pt-BR",{
-      month:"long",
-      year:"numeric"
-    });
-
-  let html="";
-
-  for(let i=0;i<firstWeekday;i++){
-    html+='<button class="calendar-day empty" tabindex="-1"></button>';
-  }
-
-  for(let day=1;day<=totalDays;day++){
-    const date=
-      `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-
-    const classes=["calendar-day"];
-
-    if(date===today) classes.push("today");
-    if(savedDates.has(date)) classes.push("saved");
-    if(date===selectedDate) classes.push("selected");
-
-    html+=`
-      <button
-        type="button"
-        class="${classes.join(" ")}"
-        onclick="showDaySummary('${date}')"
-      >${day}</button>
-    `;
-  }
-
-  document.getElementById("calendarGrid").innerHTML=html;
-}
-
-function showDaySummary(date){
-  selectedDate=date;
-  document.getElementById("dayEditForm").style.display="none";
-  document.getElementById("editDayButton").style.display="block";
-  renderCalendar();
-
-  const records=getDays().filter(day=>day.date===date);
-  const summary=document.getElementById("daySummary");
-
-  document.getElementById("daySummaryTitle").textContent=formatDate(date);
-
-  if(!records.length){
-    document.getElementById("editDayButton").style.display="none";
-    document.getElementById("dayEarnings").textContent="R$ 0,00";
-    document.getElementById("dayLiters").textContent="0,0 L";
-    document.getElementById("dayFuel").textContent="R$ 0,00";
-    document.getElementById("dayProfit").textContent="R$ 0,00";
-    document.getElementById("dayKm").textContent="0,0 km";
-    document.getElementById("dayKmPerLiter").textContent="0,0 km/L";
-    document.getElementById("dayHours").textContent="00:00";
-    summary.style.display="block";
-    return;
-  }
-
-  const totals=aggregate(records);
-
-  document.getElementById("dayEarnings").textContent=money(totals.earnings);
-  document.getElementById("dayLiters").textContent=`${decimal(totals.quantityUsed)} L`;
-  document.getElementById("dayFuel").textContent=money(totals.fuelCost);
-  document.getElementById("dayProfit").textContent=money(totals.profit);
-  document.getElementById("dayKm").textContent=`${decimal(totals.distance)} km`;
-  document.getElementById("dayKmPerLiter").textContent=
-    totals.quantityUsed>0
-      ? `${decimal(totals.distance/totals.quantityUsed)} km/L`
-      : "0,0 km/L";
-  document.getElementById("dayHours").textContent=minutesToTimeText(totals.workedMinutes);
-
-  summary.style.display="block";
-  setTimeout(() => {
-    summary.scrollIntoView({
-      behavior:"smooth",
-      block:"center"
-    });
-  }, 50);
-}
-
-
-function openDayEdit(){
-  if(!selectedDate) return;
-
-  const records=getDays().filter(day=>day.date===selectedDate);
-  if(!records.length) return;
-
-  const totals=aggregate(records);
-
-  document.getElementById("editDistance").value=totals.distance;
-  document.getElementById("editEarnings").value=totals.earnings;
-  document.getElementById("editWorkedHours").value=minutesToTimeText(totals.workedMinutes);
-
-  document.getElementById("dayEditForm").style.display="block";
-  document.getElementById("editDayButton").style.display="none";
-
-  document.getElementById("dayEditForm").scrollIntoView({
-    behavior:"smooth",
-    block:"center"
-  });
-}
-
-function cancelDayEdit(){
-  document.getElementById("dayEditForm").style.display="none";
-  document.getElementById("editDayButton").style.display="block";
-}
-
-function saveDayEdit(){
-  if(!selectedDate) return;
-
-  const distance=Number(document.getElementById("editDistance").value.replace(",","."));
-  const earnings=Number(document.getElementById("editEarnings").value.replace(",","."));
-  const workedMinutes=timeTextToMinutes(document.getElementById("editWorkedHours").value);
-
-  if(!distance || distance<=0){
-    alert("Informe uma quantidade válida de quilômetros.");
-    return;
-  }
-
-  if(Number.isNaN(earnings) || earnings<0){
-    alert("Informe um faturamento válido.");
-    return;
-  }
-
-  if(Number.isNaN(workedMinutes)){
-    alert("Informe as horas no formato HH:MM. Exemplo: 08:30.");
-    return;
-  }
-
-  const days=getDays();
-  const selectedRecords=days.filter(day=>day.date===selectedDate);
-
-  if(!selectedRecords.length){
-    alert("Registro do dia não encontrado.");
-    return;
-  }
-
-  const base=selectedRecords[0];
-  const consumption=Number(base.consumption || 0);
-  const fuelPrice=Number(base.fuelPrice || 0);
-
-  const quantityUsed=consumption>0 ? distance/consumption : 0;
-  const fuelCost=quantityUsed*fuelPrice;
-  const profit=earnings-fuelCost;
-  const kmPerLiter=quantityUsed>0 ? distance/quantityUsed : 0;
-
-  const updatedRecord={
-    ...base,
-    distance,
-    earnings,
-    workedMinutes,
-    quantityUsed,
-    fuelCost,
-    profit,
-    kmPerLiter
-  };
-
-  const updatedDays=days.filter(day=>day.date!==selectedDate);
-  updatedDays.push(updatedRecord);
-  updatedDays.sort((a,b)=>a.date.localeCompare(b.date));
-
-  saveDays(updatedDays);
-
-  cancelDayEdit();
-  showDaySummary(selectedDate);
-  updatePeriodSummary();
-  renderCalendar();
-
-  alert("Informações atualizadas com sucesso.");
-}
-
-function initializeDates(){
-  const today=new Date();
-  const firstDay=new Date(today.getFullYear(),today.getMonth(),1);
-
-  document.getElementById("recordDate").value=localDateString(today);
-  document.getElementById("startDate").value=localDateString(firstDay);
-  document.getElementById("endDate").value=localDateString(today);
-
-  calendarDate=new Date(today.getFullYear(),today.getMonth(),1);
-}
-
-initializeDates();
-loadFuel();
-updatePeriodSummary();
-renderCalendar();
+iniciarCalendario();carregarConfig();
 </script>
 </body>
 </html>
