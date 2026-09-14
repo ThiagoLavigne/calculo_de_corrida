@@ -84,14 +84,15 @@ footer{text-align:center;color:var(--faint);font-size:12px;margin-top:24px;line-
 <div class="tile"><div class="label">Faturamento total</div><div class="value" id="detalhe-faturamento">R$ 0,00</div></div>
 <div class="tile"><div class="label">Litros consumidos</div><div class="value" id="detalhe-litros">0,0 L</div></div>
 </div>
+<button id="btn-excluir-dia" class="download-btn" onclick="excluirDiaSelecionado()" style="color:var(--red);border-color:rgba(255,107,107,.35);display:none;margin-top:12px;">🗑️ Excluir este dia</button>
 </section>
 <p class="cal-empty-msg" id="cal-empty-msg" style="display:none;">Nenhum dia salvo ainda. Calcule um dia na aba Calculadora e toque em "Salvar dia".</p>
 </section>
 
 <section class="view" id="view-rel">
 <section class="panel">
-<div class="field"><label for="rel-inicio">Data inicial</label><div class="input-row"><input type="date" id="rel-inicio"></div></div>
-<div class="field"><label for="rel-fim">Data final</label><div class="input-row"><input type="date" id="rel-fim"></div></div>
+<div class="field"><label for="rel-inicio">Data inicial</label><div class="input-row"><input type="date" id="rel-inicio" onchange="gerarRelatorio()"></div></div>
+<div class="field"><label for="rel-fim">Data final</label><div class="input-row"><input type="date" id="rel-fim" onchange="gerarRelatorio()"></div></div>
 <p class="error" id="rel-erro">Escolha uma data inicial anterior ou igual à data final.</p>
 <div class="actions"><button id="btn-gerar-rel" onclick="gerarRelatorio()" style="width:100%;">Gerar relatório</button></div>
 </section>
@@ -234,7 +235,7 @@ function salvarDia(){
   catch(e){toast.textContent='Não foi possível salvar. Tente de novo.';toast.classList.add('show')}
 }
 function iniciarCalendario(){const hoje=new Date();calAno=hoje.getFullYear();calMes=hoje.getMonth()}
-function mudarMes(delta){calMes+=delta;if(calMes<0){calMes=11;calAno--}if(calMes>11){calMes=0;calAno++}diaSelecionado=null;document.getElementById('detalhe-dia').style.display='none';renderCalendario()}
+function mudarMes(delta){calMes+=delta;if(calMes<0){calMes=11;calAno--}if(calMes>11){calMes=0;calAno++}diaSelecionado=null;document.getElementById('detalhe-dia').style.display='none';document.getElementById('btn-excluir-dia').style.display='none';renderCalendario()}
 function renderCalendario(){
   document.getElementById('cal-title').textContent=MESES[calMes]+' de '+calAno;
   const datas=new Set(todasAsDatas()),container=document.getElementById('cal-days');container.innerHTML='';
@@ -258,7 +259,7 @@ function selecionarDia(dataStr){
   document.getElementById('detalhe-gasto').textContent=formatarMoeda(d.gastoCombustivel);
   document.getElementById('detalhe-faturamento').textContent=formatarMoeda(d.faturamento);
   document.getElementById('detalhe-litros').textContent=d.litros.toFixed(1).replace('.',',')+' L';
-  document.getElementById('detalhe-dia').style.display='block';
+  document.getElementById('detalhe-dia').style.display='block';document.getElementById('btn-excluir-dia').style.display='block';
 }
 function atualizarLabelCombustivel(tipo){document.getElementById('tipo-combustivel-label').textContent=tipo?'· '+tipo:''}
 function carregarConfig(){
@@ -294,6 +295,19 @@ function abrirConfig(){document.getElementById('modal-overlay').classList.add('s
 function salvarConfig(){const tipo=document.getElementById('config-tipo').value,preco=numero(document.getElementById('config-preco').value),b=document.getElementById('btn-salvar-config'),old=b.textContent;try{localStorage.setItem('settings:combustivel',JSON.stringify({tipo,preco}));document.getElementById('preco').value=preco||'';atualizarLabelCombustivel(tipo);b.textContent='Salvo!';setTimeout(()=>{b.textContent=old;fecharConfig()},600)}catch(e){b.textContent='Erro ao salvar';setTimeout(()=>b.textContent=old,1200)}}
 function formatarDataBR(s){const[a,m,d]=s.split('-');return d+'/'+m+'/'+a}
 
+function excluirDiaSelecionado(){
+  if(!diaSelecionado)return;
+  const data=diaSelecionado;
+  if(!confirm('Excluir todos os registros de '+formatarDataBR(data)+'? Esta ação não pode ser desfeita.'))return;
+  try{localStorage.removeItem('day:'+data)}catch(e){}
+  try{localStorage.setItem('motoristaDias',JSON.stringify(lerDiasAntigos().filter(d=>String(d.date||'')!==data)))}catch(e){}
+  diaSelecionado=null;
+  document.getElementById('detalhe-dia').style.display='none';
+  document.getElementById('btn-excluir-dia').style.display='none';
+  renderCalendario();
+  gerarRelatorio();
+}
+
 function gerarRelatorio(){
   const inicio=document.getElementById('rel-inicio').value,fim=document.getElementById('rel-fim').value,erro=document.getElementById('rel-erro'),res=document.getElementById('rel-resultado'),sem=document.getElementById('rel-sem-dados');
   if(!inicio||!fim||inicio>fim){erro.classList.add('show');res.style.display='none';sem.style.display='none';return}
@@ -321,7 +335,7 @@ function baixarRelatorioTodos(){
   a.href=url;a.download='relatorio_motorista_'+hojeStr()+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
 
-iniciarCalendario();carregarConfig();
+iniciarCalendario();carregarConfig();gerarRelatorio();
 </script>
 </body>
 </html>
