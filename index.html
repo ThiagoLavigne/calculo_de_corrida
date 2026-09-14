@@ -192,20 +192,46 @@ function lerRegistro(dataStr){
   return somarRegistros(registrosAntigosDoDia(dataStr));
 }
 
-function todasAsDatas(){
-  const datas=new Set();
+function todosOsRegistros(){
+  const mapa=new Map();
 
-  try{
-    Object.keys(localStorage)
-      .filter(k=>k.startsWith('day:'))
-      .forEach(k=>datas.add(k.slice(4)));
-  }catch(e){}
-
+  // Histórico antigo: motoristaDias
   lerDiasAntigos().forEach(d=>{
-    if(d && d.date)datas.add(String(d.date));
+    const r=normalizarRegistro(d);
+    if(r && r.date){
+      const data=String(r.date);
+      if(!mapa.has(data)) mapa.set(data,[]);
+      mapa.get(data).push(r);
+    }
   });
 
-  return [...datas].sort();
+  // Histórico novo: day:AAAA-MM-DD
+  try{
+    Object.keys(localStorage).filter(k=>k.startsWith('day:')).forEach(k=>{
+      const data=k.slice(4);
+      try{
+        const r=normalizarRegistro(JSON.parse(localStorage.getItem(k)));
+        if(r){
+          r.date=data;
+          if(!mapa.has(data)) mapa.set(data,[]);
+          mapa.get(data).push(r);
+        }
+      }catch(e){}
+    });
+  }catch(e){}
+
+  return [...mapa.entries()]
+    .sort((a,b)=>a[0].localeCompare(b[0]))
+    .map(([date,records])=>({date,record:somarRegistros(records)}));
+}
+
+function todasAsDatas(){
+  return todosOsRegistros().map(x=>x.date);
+}
+
+function lerRegistro(dataStr){
+  const item=todosOsRegistros().find(x=>x.date===dataStr);
+  return item ? item.record : null;
 }
 
 function mudarAba(aba){
@@ -318,38 +344,92 @@ function excluirDiaSelecionado(){
 }
 
 function gerarRelatorio(){
-  const erro=document.getElementById('rel-erro'),res=document.getElementById('rel-resultado'),sem=document.getElementById('rel-sem-dados');
-  let inicio=document.getElementById('rel-inicio').value,fim=document.getElementById('rel-fim').value;
-  const todas=todasAsDatas();
-  if(!todas.length){res.style.display='none';sem.style.display='block';erro.classList.remove('show');return}
+  const erro=document.getElementById('rel-erro');
+  const res=document.getElementById('rel-resultado');
+  const sem=document.getElementById('rel-sem-dados');
+  let inicio=document.getElementById('rel-inicio').value;
+  let fim=document.getElementById('rel-fim').value;
+  const registros=todosOsRegistros();
+
+  if(!registros.length){
+    res.style.display='none';
+    sem.style.display='block';
+    erro.classList.remove('show');
+    return;
+  }
+
+  const todas=registros.map(x=>x.date);
   if(!inicio) inicio=todas[0];
   if(!fim) fim=todas[todas.length-1];
-  if(inicio>fim){erro.classList.add('show');res.style.display='none';sem.style.display='none';return}
+  if(inicio>fim){
+    erro.classList.add('show');
+    res.style.display='none';
+    sem.style.display='none';
+    return;
+  }
+
   erro.classList.remove('show');
-  const datas=todas.filter(d=>d>=inicio&&d<=fim),regs=datas.map(lerRegistro).filter(Boolean);
-  if(!regs.length){res.style.display='none';sem.style.display='block';return}
+  document.getElementById('rel-inicio').value=inicio;
+  document.getElementById('rel-fim').value=fim;
+
+  const regs=registros.filter(x=>x.date>=inicio && x.date<=fim).map(x=>x.record);
+  if(!regs.length){
+    res.style.display='none';
+    sem.style.display='block';
+    return;
+  }
+
   sem.style.display='none';
-  const t=regs.reduce((a,d)=>{a.km+=d.km;a.faturamento+=d.faturamento;a.litros+=d.litros;a.gasto+=d.gastoCombustivel;a.lucro+=d.lucroLiquido;return a},{km:0,faturamento:0,litros:0,gasto:0,lucro:0}),m=t.faturamento>0?t.lucro/t.faturamento*100:0,pos=t.lucro>=0;
-  document.getElementById('rel-periodo').textContent=formatarDataBR(inicio)+' a '+formatarDataBR(fim)+' · '+datas.length+(datas.length===1?' dia salvo':' dias salvos');
-  const le=document.getElementById('rel-lucro');le.textContent=formatarMoeda(t.lucro);le.className='value '+(pos?'positive':'negative');
-  const me=document.getElementById('rel-margem');me.textContent=m.toFixed(1).replace('.',',')+'% de margem';me.className='margem '+(pos?'positive':'negative');
-  document.getElementById('rel-km').textContent=t.km.toFixed(1).replace('.',',')+' km';document.getElementById('rel-faturamento').textContent=formatarMoeda(t.faturamento);document.getElementById('rel-litros').textContent=t.litros.toFixed(1).replace('.',',')+' L';document.getElementById('rel-gasto').textContent=formatarMoeda(t.gasto);
+  const t=regs.reduce((a,d)=>{
+    a.km+=numero(d.km);
+    a.faturamento+=numero(d.faturamento);
+    a.litros+=numero(d.litros);
+    a.gasto+=numero(d.gastoCombustivel);
+    a.lucro+=numero(d.lucroLiquido);
+    return a;
+  },{km:0,faturamento:0,litros:0,gasto:0,lucro:0});
+
+  const m=t.faturamento>0?t.lucro/t.faturamento*100:0;
+  const pos=t.lucro>=0;
+  document.getElementById('rel-periodo').textContent=
+    formatarDataBR(inicio)+' a '+formatarDataBR(fim)+' · '+regs.length+(regs.length===1?' dia salvo':' dias salvos');
+  const le=document.getElementById('rel-lucro');
+  le.textContent=formatarMoeda(t.lucro);
+  le.className='value '+(pos?'positive':'negative');
+  const me=document.getElementById('rel-margem');
+  me.textContent=m.toFixed(1).replace('.',',')+'% de margem';
+  me.className='margem '+(pos?'positive':'negative');
+  document.getElementById('rel-km').textContent=t.km.toFixed(1).replace('.',',')+' km';
+  document.getElementById('rel-faturamento').textContent=formatarMoeda(t.faturamento);
+  document.getElementById('rel-litros').textContent=t.litros.toFixed(1).replace('.',',')+' L';
+  document.getElementById('rel-gasto').textContent=formatarMoeda(t.gasto);
+  res.style.display='block';
 }
 
 function csvValor(v){return '"'+String(v).replace(/"/g,'""')+'"'}
 function baixarRelatorioTodos(){
-  const datas=todasAsDatas(),rows=[['Data','Quilômetros','Litros','Km/L','Faturamento','Gasto combustível','Lucro','Horas trabalhadas']];
-  datas.forEach(ds=>{
-    const d=lerRegistro(ds);if(!d)return;
+  const registros=todosOsRegistros();
+  if(!registros.length){alert('Não há nenhum dia salvo para gerar o relatório.');return}
+  const rows=[['Data','Quilômetros','Litros','Km/L','Faturamento','Gasto combustível','Lucro','Horas trabalhadas']];
+  registros.forEach(item=>{
+    const d=item.record;
     const horas=d.workedMinutes?Math.floor(d.workedMinutes/60)+':'+String(Math.round(d.workedMinutes%60)).padStart(2,'0'):'';
-    rows.push([formatarDataBR(ds),d.km.toFixed(1).replace('.',','),d.litros.toFixed(2).replace('.',','),d.consumo?d.consumo.toFixed(2).replace('.',','):'',d.faturamento.toFixed(2).replace('.',','),d.gastoCombustivel.toFixed(2).replace('.',','),d.lucroLiquido.toFixed(2).replace('.',','),horas])
+    rows.push([formatarDataBR(item.date),d.km.toFixed(1).replace('.',','),d.litros.toFixed(2).replace('.',','),d.consumo?d.consumo.toFixed(2).replace('.',','):'',d.faturamento.toFixed(2).replace('.',','),d.gastoCombustivel.toFixed(2).replace('.',','),d.lucroLiquido.toFixed(2).replace('.',','),horas]);
   });
-  if(rows.length===1){alert('Não há nenhum dia salvo para gerar o relatório.');return}
-  const csv='\uFEFF'+rows.map(r=>r.map(csvValor).join(';')).join('\r\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download='relatorio_motorista_'+hojeStr()+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  const csv='\uFEFF'+rows.map(r=>r.map(csvValor).join(';')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='relatorio_motorista_'+hojeStr()+'.csv';
+  a.style.display='none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},1000);
 }
 
-iniciarCalendario();carregarConfig();
+iniciarCalendario();
+carregarConfig();
 const datasIniciais=todasAsDatas();
 if(datasIniciais.length){
   document.getElementById('rel-inicio').value=datasIniciais[0];
