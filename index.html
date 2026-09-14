@@ -147,13 +147,64 @@ function normalizarRegistro(d){
   return {...d,km,litros,faturamento,gastoCombustivel:gasto,lucroLiquido:lucro,consumo,workedMinutes:minutos};
 }
 
-function lerRegistro(dataStr){
-  try{return normalizarRegistro(JSON.parse(localStorage.getItem('day:'+dataStr)))}
-  catch(e){return null}
+/* Compatibilidade com a versão antiga:
+   - dias antigos: localStorage["motoristaDias"] (array)
+   - combustível antigo: localStorage["motoristaCombustivel"]
+   Os dados antigos NÃO são apagados nem alterados. */
+function lerDiasAntigos(){
+  try{
+    const dados=JSON.parse(localStorage.getItem('motoristaDias'));
+    return Array.isArray(dados)?dados:[];
+  }catch(e){return []}
 }
+
+function registrosAntigosDoDia(dataStr){
+  return lerDiasAntigos()
+    .filter(d=>String(d.date||'')===dataStr)
+    .map(normalizarRegistro);
+}
+
+function somarRegistros(registros){
+  if(!registros.length)return null;
+  if(registros.length===1)return registros[0];
+
+  const t=registros.reduce((a,d)=>{
+    a.km+=numero(d.km);
+    a.litros+=numero(d.litros);
+    a.faturamento+=numero(d.faturamento);
+    a.gastoCombustivel+=numero(d.gastoCombustivel);
+    a.lucroLiquido+=numero(d.lucroLiquido);
+    a.workedMinutes+=numero(d.workedMinutes);
+    return a;
+  },{km:0,litros:0,faturamento:0,gastoCombustivel:0,lucroLiquido:0,workedMinutes:0});
+
+  t.consumo=t.litros>0?t.km/t.litros:0;
+  return {...registros[0],...t};
+}
+
+function lerRegistro(dataStr){
+  try{
+    const novo=JSON.parse(localStorage.getItem('day:'+dataStr));
+    if(novo)return normalizarRegistro(novo);
+  }catch(e){}
+
+  return somarRegistros(registrosAntigosDoDia(dataStr));
+}
+
 function todasAsDatas(){
-  try{return Object.keys(localStorage).filter(k=>k.startsWith('day:')).map(k=>k.slice(4)).sort()}
-  catch(e){return []}
+  const datas=new Set();
+
+  try{
+    Object.keys(localStorage)
+      .filter(k=>k.startsWith('day:'))
+      .forEach(k=>datas.add(k.slice(4)));
+  }catch(e){}
+
+  lerDiasAntigos().forEach(d=>{
+    if(d && d.date)datas.add(String(d.date));
+  });
+
+  return [...datas].sort();
 }
 
 function mudarAba(aba){
@@ -211,8 +262,33 @@ function selecionarDia(dataStr){
 }
 function atualizarLabelCombustivel(tipo){document.getElementById('tipo-combustivel-label').textContent=tipo?'· '+tipo:''}
 function carregarConfig(){
-  try{const cfg=JSON.parse(localStorage.getItem('settings:combustivel'));if(!cfg)return;if(cfg.tipo){document.getElementById('config-tipo').value=cfg.tipo;atualizarLabelCombustivel(cfg.tipo)}if(cfg.preco!==undefined){document.getElementById('config-preco').value=cfg.preco;if(!document.getElementById('preco').value)document.getElementById('preco').value=cfg.preco}}
-  catch(e){}
+  try{
+    let cfg=JSON.parse(localStorage.getItem('settings:combustivel'));
+
+    /* Se ainda não existir a configuração nova, aproveita a antiga. */
+    if(!cfg){
+      const antiga=JSON.parse(localStorage.getItem('motoristaCombustivel'));
+      if(antiga){
+        cfg={
+          tipo:antiga.fuelType,
+          preco:antiga.fuelPrice
+        };
+      }
+    }
+
+    if(!cfg)return;
+
+    if(cfg.tipo){
+      document.getElementById('config-tipo').value=cfg.tipo;
+      atualizarLabelCombustivel(cfg.tipo);
+    }
+
+    if(cfg.preco!==undefined){
+      document.getElementById('config-preco').value=cfg.preco;
+      if(!document.getElementById('preco').value)
+        document.getElementById('preco').value=cfg.preco;
+    }
+  }catch(e){}
 }
 function abrirConfig(){document.getElementById('modal-overlay').classList.add('show')}function fecharConfig(){document.getElementById('modal-overlay').classList.remove('show')}function fecharConfigSeClicarFora(e){if(e.target.id==='modal-overlay')fecharConfig()}
 function salvarConfig(){const tipo=document.getElementById('config-tipo').value,preco=numero(document.getElementById('config-preco').value),b=document.getElementById('btn-salvar-config'),old=b.textContent;try{localStorage.setItem('settings:combustivel',JSON.stringify({tipo,preco}));document.getElementById('preco').value=preco||'';atualizarLabelCombustivel(tipo);b.textContent='Salvo!';setTimeout(()=>{b.textContent=old;fecharConfig()},600)}catch(e){b.textContent='Erro ao salvar';setTimeout(()=>b.textContent=old,1200)}}
